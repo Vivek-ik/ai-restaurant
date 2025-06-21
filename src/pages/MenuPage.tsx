@@ -2,7 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageMeta from "../components/common/PageMeta";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem, removeItem } from "../store/orderSlice";
+import { addItem } from "../store/orderSlice";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { setMenuItems } from "../store/menuSlice";
@@ -181,12 +181,15 @@ const Orders = () => {
   }, [])
 
   useEffect(() => {
-    categoryId
-      ? setItemsToDisplay(menuItemsLocal?.filter((item: any) => item.category === categoryId))
-      : [];
+    if (categoryId) {
+      setItemsToDisplay(
+        menuItemsLocal?.filter((item: any) => item.category === categoryId)
+      );
+    } else {
+      setItemsToDisplay(menuItemsLocal);
+    }
+  }, [menuItemsLocal, categoryId]);
 
-    // setItemsToDisplay(itemsToDisplay);
-  }, [menuItemsLocal]);
 
 
   const getCartItem = (itemId: string): CartItem | undefined => {

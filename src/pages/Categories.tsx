@@ -47,7 +47,7 @@ export default function MenuByCategory() {
 
     const getMenu = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/orders/menu");
+            const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/menu");
             // setMenuItemsLocal(res.data);  // Local state (optional)
             dispatch(setMenuItems(res.data)); // Redux global state
         } catch (error: any) {
@@ -58,7 +58,7 @@ export default function MenuByCategory() {
     // inside Orders component
     const getCategories = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/categories");
+            const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/categories");
             dispatch(setCategories(res.data));
         } catch (err) {
             console.error("Failed to fetch categories", err);

@@ -2,7 +2,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { addItem } from "../../store/orderSlice";
-import axios from "axios";
 
 type MenuItem = {
   id: number;

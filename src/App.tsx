@@ -22,7 +22,6 @@ import Orders from "./pages/Orders";
 // import QrScannerPage from "./pages/QrScannerPage";
 import MenuPage from "./pages/MenuPage";
 import QRScanner from "./pages/QrScannerPage";
-import CustomerOrder from "./pages/CustomerOrder";
 import Cart from "./components/cart";
 import CustomizationPage from "./pages/CustomerOrder";
 import OrderPlaced from "./pages/orderPlaced";

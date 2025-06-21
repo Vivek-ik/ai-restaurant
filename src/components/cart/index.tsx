@@ -1,6 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import { addItem, clearOrder, removeItem, updateQuantity } from "../../store/orderSlice";
 import BackButton from "../backButton/BackButton";
 import { useEffect, useState } from "react";
 import CustomizationModal from "../customizationModal/CustomizationModal";
