@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, matchPath, useLocation, useNavigate, useParams } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { useDispatch } from "react-redux";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-
+  const { tableId } = useParams(); // So we can navigate back with the right tableId
+  
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const isMainAIPage = matchPath("/main-ai-page/:tableId", location.pathname);
   console.log("AppHeader location", location.pathname);
 
   const handleToggle = () => {
@@ -41,10 +43,10 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-  // const handleCustomize = () => {
-  //   // dispatch(addItem(item))
-  //   navigate(`/order-with-ai`);
-  // };
+  const handleCustomize = () => {
+    // dispatch(addItem(item))
+    navigate(`/main-ai-page/${tableId}`);
+  };
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
@@ -102,7 +104,7 @@ const AppHeader: React.FC = () => {
             <h1 className="font-bold text-[24px]">Shreemaya</h1>
           </Link>
 
-          {/* {location.pathname !== "/customize-order" && (
+          {!isMainAIPage && (
 
             <button
               onClick={() => handleCustomize()}
@@ -110,7 +112,7 @@ const AppHeader: React.FC = () => {
             >
               Ask AI
             </button>
-          )} */}
+          )}
 
           <div className="hidden lg:block">
             <form>

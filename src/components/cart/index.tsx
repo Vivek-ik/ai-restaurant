@@ -60,7 +60,7 @@ export default function Cart() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/orders"); // Adjust baseURL if needed
+        const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders"); // Adjust baseURL if needed
         setOrders(res.data);
       } catch (err: any) {
         setError(err?.response?.data?.error || "Failed to fetch orders");
@@ -95,7 +95,7 @@ export default function Cart() {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/orders", orderData);
+      const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/orders", orderData);
       console.log("Order placed:", res.data);
       dispatch(clearCart());
       navigate("/order-placed", { replace: true });

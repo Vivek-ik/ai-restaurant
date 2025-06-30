@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 import { AddToCartFlow } from '../components/addToCartFlow/AddToCartFlow';
 
 const VoiceAssistantUI = () => {
-  
+
   const navigate = useNavigate();
   const { tableId } = useParams();
   // const [tableId, setTableId] = useState('1'); // Default table ID
@@ -19,6 +19,7 @@ const VoiceAssistantUI = () => {
   const [showChat, setShowChat] = useState(false);
   const [items, setItems] = useState([]);
   const [intent, setIntent] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   console.log("aiReply", items);
 
@@ -31,28 +32,38 @@ const VoiceAssistantUI = () => {
     utterance.lang = language === 'English' ? 'en-IN' : 'hi-IN';
     window.speechSynthesis.speak(utterance);
   };
-
-  const handleSend = async (text: any) => {
+  const handleSend = async (text: string) => {
     if (!text.trim()) return;
 
     setMessages(prev => [...prev, { from: 'user', text }]);
+    setIsLoading(true); // ⬅️ Start loading
 
-    // Replace with your actual AI API call
-    const res = await fetch('http://localhost:5000/api/ai-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, lang: language === 'English' ? 'en' : 'hi', tableId: '1' })
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch('https://ai-restaurant-backend-production.up.railway.app/api/ai-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          lang: language === 'English' ? 'en' : 'hi',
+          tableId: tableId || '1',
+        }),
+      });
 
-    setMessages(prev => [...prev, { from: 'ai', text: data.reply }]);
-    setIntent(data.intent);
-    setAiReply(data.reply.split('\n').filter((line: string) => line.trim() !== ''));
-    setItems(data.items || []);
-    speakResponse(data.reply);
-      setLiveTranscript(""); // ✅ clear here
+      const data = await res.json();
 
+      setMessages(prev => [...prev, { from: 'ai', text: data.reply }]);
+      setIntent(data.intent);
+      setAiReply(data.reply.split('\n').filter((line: string) => line.trim() !== ''));
+      setItems(data.items || []);
+      speakResponse(data.reply);
+    } catch (err) {
+      console.error("AI error", err);
+    } finally {
+      setLiveTranscript("");
+      setIsLoading(false); // ⬅️ Stop loading
+    }
   };
+
 
   const startListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -61,14 +72,19 @@ const VoiceAssistantUI = () => {
     recognition.interimResults = true;
     recognition.continuous = false;
 
+    // ✅ Only clear AI replies and items here — NOT liveTranscript
+    setAiReply([]);
+    setItems([]);
+    setIntent(undefined);
+
     recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results as SpeechRecognitionResult[]).map((r) => r[0].transcript).join('');
+      const transcript = Array.from(event.results as SpeechRecognitionResult[])
+        .map((r) => r[0].transcript)
+        .join('');
       setLiveTranscript(transcript);
 
       if (event.results[0].isFinal) {
-        handleSend(transcript);
-        setIsListening(false);
-        // setLiveTranscript('');
+        handleSend(transcript); // will clear transcript after reply
       }
     };
 
@@ -77,8 +93,8 @@ const VoiceAssistantUI = () => {
 
     recognition.start();
     setIsListening(true);
-    setLiveTranscript('');
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-start font-sans p-4">
@@ -94,29 +110,34 @@ const VoiceAssistantUI = () => {
         <p className="text-sm text-blue-700">e.g., Order masala dosa?”</p>
       </div>
 
-      {(isListening || aiReply.length > 0) && (
-
-        <div className="bg-white border p-4 text-gray-700 rounded-md mb-3">
-          {isListening ? (
-            // Show listening box
-            <div className="p-3 rounded-xl text-gray-800 text-lg">
+      {(isListening || aiReply.length > 0 || isLoading) && (
+        <div className="bg-white p-4 text-gray-700 rounded-md mb-3 w-full max-w-md">
+          {isListening && (
+            <div className="flex items-center justify-center p-3 rounded-xl text-gray-800 text-lg">
               🎙️ {liveTranscript || 'Listening...'}
             </div>
-          ) : aiReply.length > 0 ? (
-            // Show AI reply box
-            <div className="bg-white border p-4 text-gray-700 rounded-md mb-3">
+          )}
+
+          {isLoading && !isListening && (
+            <div className="flex items-center justify-center gap-2 text-blue-600 text-sm italic">
+              <span className="loader w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
+              Thinking...
+            </div>
+          )}
+
+          {!isListening && !isLoading && aiReply.length > 0 && (
+            <div className="p-2">
               {aiReply.map((reply, index) => (
                 <p key={index} className="text-gray-600">{reply}</p>
-
               ))}
               {intent === "order_item" && items?.length > 0 && (
                 <AddToCartFlow items={items} tableId={tableId ?? ""} />
               )}
             </div>
-          ) : null
-          }
+          )}
         </div>
       )}
+
 
       <div className="flex items-center w-full max-w-md bg-white rounded-xl shadow mb-3">
         <input
@@ -148,10 +169,10 @@ const VoiceAssistantUI = () => {
         </button>
       </div>
 
-      <div className="flex gap-6 mb-4 underline text-blue-700 font-semibold">
+      {/* <div className="flex gap-6 mb-4 underline text-blue-700 font-semibold">
         <a href="#">Jobs</a>
         <a href="#">Stores</a>
-      </div>
+      </div> */}
 
       <button
         className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow hover:bg-blue-700 transition"

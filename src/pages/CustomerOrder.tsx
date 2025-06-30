@@ -73,7 +73,7 @@ export default function Order({ onClose }: any) {
   };
 
   const sendAIMessage = async (message: string, lang: string) => {
-    const res = await axios.post("http://localhost:5000/api/ai-order", {
+    const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/ai-order", {
       tableId: tableId ?? "",
       message: message,
       lang: language,

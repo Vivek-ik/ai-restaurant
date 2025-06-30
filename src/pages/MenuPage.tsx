@@ -164,7 +164,7 @@ const Orders = () => {
 
   const getMenu = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/orders/menu");
+      const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/menu");
       setMenuItemsLocal(res.data);  // Local state (optional)
       dispatch(setMenuItems(res.data)); // Redux global state
     } catch (error: any) {

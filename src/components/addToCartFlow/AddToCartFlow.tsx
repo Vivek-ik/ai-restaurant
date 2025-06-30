@@ -75,7 +75,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
 
     const handleSubmitOrder = async () => {
         try {
-            const res = await axios.post("http://localhost:5000/api/orders", {
+            const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/orders", {
                 tableNumber: tableId,
                 items: items.map((item) => ({
                     id: item.id,

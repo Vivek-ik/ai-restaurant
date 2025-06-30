@@ -18,7 +18,7 @@ export default function OrderPlaced() {
   }, [])
   const getMenu = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/orders/");
+      const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/");
       setMenuItemsLocal(res.data);  // Local state (optional)
       // dispatch(setMenuItems(res.data)); // Redux global state
     } catch (error: any) {

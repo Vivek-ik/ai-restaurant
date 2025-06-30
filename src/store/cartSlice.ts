@@ -4,7 +4,7 @@ import axios from "axios";
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (tableId: string) => {
-    const res = await axios.get(`http://localhost:5000/api/cart/${tableId}`);
+    const res = await axios.get(`https://ai-restaurant-backend-production.up.railway.app/api/cart/${tableId}`);
     return res.data;
   }
 );
@@ -19,7 +19,7 @@ interface AddToCartArgs {
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async ({ tableId, menuItemId }: { tableId: string; menuItemId: string }) => {
-    const res = await axios.post("http://localhost:5000/api/cart/remove", {
+    const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/cart/remove", {
       tableId,
       menuItemId,
     });
@@ -30,7 +30,7 @@ export const removeFromCart = createAsyncThunk(
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
   async ({ tableId, menuItemId, quantity, customizations }: AddToCartArgs) => {
-    const res = await axios.post("http://localhost:5000/api/cart/add", {
+    const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/cart/add", {
       tableId,
       menuItemId,
       quantity,
@@ -44,7 +44,7 @@ export const removedFromCart = createAsyncThunk(
   "cart/removedFromCart",
   async ({ tableId, itemId }: { tableId: string; itemId: string }) => {
     const res = await axios.post(
-      "http://localhost:5000/api/cart/remove-cart-item",
+      "https://ai-restaurant-backend-production.up.railway.app/api/cart/remove-cart-item",
       { tableId, itemId }
     );
     return res.data; // { items: [...] }

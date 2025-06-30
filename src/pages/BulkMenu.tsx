@@ -133,7 +133,7 @@ export default function BulkUploader() {
     const handleUpload = async () => {
         try {
             // const parsed = JSON.parse(jsonData);
-            const res = await axios.post("http://localhost:5000/api/menu-items/bulk-insert", jsonData);
+            const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/menu-items/bulk-insert", jsonData);
             setMessage(`✅ Inserted ${res.data.data.length} items successfully`);
         } catch (error: any) {
             setMessage(`❌ Error: ${error.response?.data?.message || error.message}`);
