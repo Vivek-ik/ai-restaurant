@@ -158,17 +158,21 @@ const Orders = () => {
   const [menuItemsLocal, setMenuItemsLocal] = useState<any[]>([]);
   const [itemsToDisplay, setItemsToDisplay] = useState<any[]>([]);
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
 
   console.log("itemsToDisplay", itemsToDisplay);
 
 
   const getMenu = async () => {
     try {
+      setIsMenuLoading(true);
       const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/menu");
       setMenuItemsLocal(res.data);  // Local state (optional)
       dispatch(setMenuItems(res.data)); // Redux global state
     } catch (error: any) {
       console.error("Error fetching menu", error);
+    } finally {
+      setIsMenuLoading(false);
     }
   };
 
@@ -246,105 +250,113 @@ const Orders = () => {
         </button>
       </div>
       <PageBreadcrumb pageTitle={`Menu - Table ${tableId}`} />
-      <div className=" p-4">
-        {itemsToDisplay.map((item: any) => {
-          const cartItem = getCartItem(item._id);
 
-          return (
-            <div
-              key={item._id}
-              className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 p-4 group h-[333px] mb-4"
-            >
-              {/* Item Image */}
-              <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-4">
-                <img
-                  src={item.image || '/default-dish.jpg'}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
+      {isMenuLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader className="animate-spin h-8 w-8 text-yellow-500" />
+          <span className="ml-3 text-yellow-600 font-medium text-lg">Loading menu...</span>
+        </div>
+      ) : (
+        <div className=" p-4">
+          {itemsToDisplay.map((item: any) => {
+            const cartItem = getCartItem(item._id);
 
-              {/* Item Info */}
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white">{item.itemName.en}</h3>
-                <span className="text-sm font-semibold text-yellow-500">₹{item.price}</span>
-              </div>
+            return (
+              <div
+                key={item._id}
+                className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 p-4 group h-[333px] mb-4"
+              >
+                {/* Item Image */}
+                <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-4">
+                  <img
+                    src={item.image || '/default-dish.jpg'}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
 
-              {/* <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{item.category}</p> */}
+                {/* Item Info */}
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">{item.itemName.en}</h3>
+                  <span className="text-sm font-semibold text-yellow-500">₹{item.price}</span>
+                </div>
 
-              <div className="flex gap-2 flex-wrap mb-3">
-                {item.tags.map((tag: any, idx: any) => (
-                  <span
-                    key={idx}
-                    className="rounded-full bg-yellow-100 dark:bg-yellow-900/40 px-3 py-1 text-xs text-yellow-800 dark:text-yellow-300"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+                {/* <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{item.category}</p> */}
 
-              {/* Action Buttons */}
-              <div className="mt-4 space-y-2">
-                {item.available ? (
-                  cartItem ? (
-                    <div className="flex w-full items-center justify-between bg-yellow-100 dark:bg-yellow-900/20 rounded-xl px-4 py-2">
-                      {loading && item?._id === loadingItemId ?
+                <div className="flex gap-2 flex-wrap mb-3">
+                  {item.tags.map((tag: any, idx: any) => (
+                    <span
+                      key={idx}
+                      className="rounded-full bg-yellow-100 dark:bg-yellow-900/40 px-3 py-1 text-xs text-yellow-800 dark:text-yellow-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-4 space-y-2">
+                  {item.available ? (
+                    cartItem ? (
+                      <div className="flex w-full items-center justify-between bg-yellow-100 dark:bg-yellow-900/20 rounded-xl px-4 py-2">
+                        {loading && item?._id === loadingItemId ?
+                          <div className="flex items-center justify-center w-full h-full">
+                            <Loader style={{ height: "32px" }} />
+                          </div>
+                          :
+                          <>
+                            <button
+                              onClick={() => {
+                                // dispatch(removeItem(item.id));
+                                handleRemoveFromCart(item?._id)
+                              }}
+                              className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
+                            >
+                              -
+                            </button>
+                            <span className="text-sm font-bold text-gray-800 dark:text-white">{cartItem?.quantity}</span>
+                            <button
+                              onClick={() => {
+                                // dispatch(addItem(item));
+                                handleAddToCart(item?._id)
+                              }}
+                              className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
+                            >
+                              +
+                            </button>
+                          </>
+                        }
+                      </div>
+                    ) : (
+                      loading && item?._id === loadingItemId ?
                         <div className="flex items-center justify-center w-full h-full">
                           <Loader style={{ height: "32px" }} />
                         </div>
                         :
-                        <>
-                          <button
-                            onClick={() => {
-                              // dispatch(removeItem(item.id));
-                              handleRemoveFromCart(item?._id)
-                            }}
-                            className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
-                          >
-                            -
-                          </button>
-                          <span className="text-sm font-bold text-gray-800 dark:text-white">{cartItem?.quantity}</span>
-                          <button
-                            onClick={() => {
-                              // dispatch(addItem(item));
-                              handleAddToCart(item?._id)
-                            }}
-                            className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
-                          >
-                            +
-                          </button>
-                        </>
-                      }
-                    </div>
+                        <button
+                          onClick={() => {
+                            dispatch(addItem(item));
+                            handleAddToCart(item._id)
+                          }}
+                          className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-md hover:from-yellow-600 hover:to-yellow-700 transition"
+                        >
+                          Add to Order
+                        </button>
+                    )
                   ) : (
-                    loading && item?._id === loadingItemId ?
-                      <div className="flex items-center justify-center w-full h-full">
-                        <Loader style={{ height: "32px" }} />
-                      </div>
-                      :
-                      <button
-                        onClick={() => {
-                          dispatch(addItem(item));
-                          handleAddToCart(item._id)
-                        }}
-                        className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-md hover:from-yellow-600 hover:to-yellow-700 transition"
-                      >
-                        Add to Order
-                      </button>
-                  )
-                ) : (
-                  <button
-                    disabled
-                    className="w-full rounded-xl px-4 py-2 text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed"
-                  >
-                    Unavailable
-                  </button>
-                )}
+                    <button
+                      disabled
+                      className="w-full rounded-xl px-4 py-2 text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed"
+                    >
+                      Unavailable
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Checkout Button */}
       <div className="fixed bottom-6 right-6 z-50">

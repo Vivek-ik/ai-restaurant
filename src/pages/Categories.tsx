@@ -24,6 +24,7 @@ export default function MenuByCategory() {
     const dispatch = useDispatch();
     const { tableId } = useParams();
     console.log("tableId", tableId);
+    const [isLoading, setIsLoading] = useState(true);
 
     const menuItems = useSelector((state: RootState) => state.menu.items);
     console.log("menuItems", menuItems);
@@ -68,10 +69,21 @@ export default function MenuByCategory() {
     };
 
     useEffect(() => {
-        getMenu()
-        getCategories();
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                await getMenu();
+                await getCategories();
+            } catch (err) {
+                console.error("Error loading data", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    }, [])
+        fetchData();
+    }, []);
+
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-10 px-6">
@@ -79,75 +91,84 @@ export default function MenuByCategory() {
                 🍽️ What would you like to eat today?
             </h2>
 
-            {/* Category Grid */}
-            {!selectedCategory && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {categories.map((category: any) => {
-                        console.log("category", category);
-
-                        return (
-                            <div
-                                key={category._id}
-                                onClick={() => handleSimulatedScan(category)}
-                                className="relative cursor-pointer rounded-2xl overflow-hidden shadow-lg transform transition hover:scale-105 group"
-                            >
-                                <img
-                                    src={categoryImages[category.name]}
-                                    alt={category.name}
-                                    className="w-full h-52 object-cover brightness-90"
-                                />
-                                <div className="absolute bg-black text-center bottom-0 left-0 right-0 bg-gradient-to-t from-black via-transparent to-transparent p-4">
-                                    <h3 className="text-xl font-semibold text-white">{category.name}</h3>
-                                </div>
-                            </div>
-                        )
-                    })}
-
+            {isLoading ? (
+                <div className="flex justify-center items-center mt-10">
+                    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="ml-3 text-orange-500 font-medium">Loading categories...</span>
                 </div>
-            )}
+            ) : (
+                <>
+                    {/* Category Grid */}
+                    {!selectedCategory && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {categories.map((category: any) => {
+                                console.log("category", category);
 
-            {/* Items Grid */}
-            {selectedCategory && (
-                <div className="mt-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-                            {/* <FaUtensils className="text-orange-500" /> */}
-                            {selectedCategory}
-                        </h3>
-                        <button
-                            onClick={() => setSelectedCategory(null)}
-                            className="text-orange-600 font-medium flex items-center gap-1 hover:underline"
-                        >
-                            {/* <FaArrowLeft /> */}
-                            Back
-                        </button>
-                    </div>
-
-                    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                        {itemsToDisplay.map((item) => (
-                            <div
-                                key={item.id}
-                                className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition"
-                            >
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full h-48 object-cover"
-                                />
-                                <div className="p-5">
-                                    <h4 className="font-bold text-xl text-gray-800">{item.name}</h4>
-                                    <p className="text-gray-500 mt-1 text-sm">₹{item.price}</p>
-                                    <button
-                                        onClick={() => alert("Customize modal")}
-                                        className="mt-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition"
+                                return (
+                                    <div
+                                        key={category._id}
+                                        onClick={() => handleSimulatedScan(category)}
+                                        className="relative cursor-pointer rounded-2xl overflow-hidden shadow-lg transform transition hover:scale-105 group"
                                     >
-                                        Customize Order
-                                    </button>
-                                </div>
+                                        <img
+                                            src={categoryImages[category.name]}
+                                            alt={category.name}
+                                            className="w-full h-52 object-cover brightness-90"
+                                        />
+                                        <div className="absolute bg-black text-center bottom-0 left-0 right-0 bg-gradient-to-t from-black via-transparent to-transparent p-4">
+                                            <h3 className="text-xl font-semibold text-white">{category.name}</h3>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+
+                        </div>
+                    )}
+
+                    {/* Items Grid */}
+                    {selectedCategory && (
+                        <div className="mt-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                                    {/* <FaUtensils className="text-orange-500" /> */}
+                                    {selectedCategory}
+                                </h3>
+                                <button
+                                    onClick={() => setSelectedCategory(null)}
+                                    className="text-orange-600 font-medium flex items-center gap-1 hover:underline"
+                                >
+                                    {/* <FaArrowLeft /> */}
+                                    Back
+                                </button>
                             </div>
-                        ))}
-                    </div>
-                </div>
+
+                            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                                {itemsToDisplay.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition"
+                                    >
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                        <div className="p-5">
+                                            <h4 className="font-bold text-xl text-gray-800">{item.name}</h4>
+                                            <p className="text-gray-500 mt-1 text-sm">₹{item.price}</p>
+                                            <button
+                                                onClick={() => alert("Customize modal")}
+                                                className="mt-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition"
+                                            >
+                                                Customize Order
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
