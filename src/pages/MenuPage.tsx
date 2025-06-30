@@ -8,7 +8,7 @@ import axios from "axios";
 import { setMenuItems } from "../store/menuSlice";
 import { addToCart, fetchCart, removeFromCart } from "../store/cartSlice";
 import { RootState } from "../store";
-import { Loader } from "lucide-react";
+import { ArrowLeft, Loader } from "lucide-react";
 
 export const dummyMenuItems = [
   {
@@ -164,7 +164,7 @@ const Orders = () => {
 
   const getMenu = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/orders/menu");
+      const res = await axios.get("https://y54yyzo3.up.railway.app/api/orders/menu");
       setMenuItemsLocal(res.data);  // Local state (optional)
       dispatch(setMenuItems(res.data)); // Redux global state
     } catch (error: any) {
@@ -173,8 +173,8 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchCart("1"));
-  }, [dispatch]);
+    dispatch(fetchCart(tableId ?? ""));
+  }, [dispatch, tableId]);
 
   useEffect(() => {
     getMenu()
@@ -202,12 +202,12 @@ const Orders = () => {
     try {
       await dispatch(
         removeFromCart({
-          tableId: "1",
+          tableId: tableId ?? "",
           menuItemId: itemId,
         })
       );
 
-      await dispatch(fetchCart("1")); // Refresh cart
+      await dispatch(fetchCart(tableId ?? "")); // Refresh cart
     } catch (err) {
       console.error("Failed to remove item:", err);
     }
@@ -220,14 +220,14 @@ const Orders = () => {
     try {
       await dispatch(
         addToCart({
-          tableId: "1",
+          tableId: tableId ?? "",
           menuItemId: itemId,
           quantity: 1,
           // customizations: ["No Onion"],
         })
       );
 
-      await dispatch(fetchCart("1")); // Refresh cart
+      await dispatch(fetchCart(tableId ?? "")); // Refresh cart
     } catch (err) {
       console.error("Failed to add item:", err);
 
@@ -236,15 +236,24 @@ const Orders = () => {
   return (
     <>
       <PageMeta title={`Menu for Table ${tableId}`} description="Customer menu view" />
+      <div className="flex items-center space-x-2 px-4 pt-4">
+        <button
+          onClick={() => navigate(`/categories/${tableId}`)}
+          className="flex items-center text-sm text-primary hover:underline"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Back to categories
+        </button>
+      </div>
       <PageBreadcrumb pageTitle={`Menu - Table ${tableId}`} />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-[65px]">
+      <div className=" p-4">
         {itemsToDisplay.map((item: any) => {
           const cartItem = getCartItem(item._id);
 
           return (
             <div
               key={item._id}
-              className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 p-4 group h-[333px]"
+              className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 p-4 group h-[333px] mb-4"
             >
               {/* Item Image */}
               <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-4">

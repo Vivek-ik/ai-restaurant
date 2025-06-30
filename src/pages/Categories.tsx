@@ -22,11 +22,13 @@ const categoryImages: { [key: string]: string } = {
 export default function MenuByCategory() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { tableId } = useParams();
+    console.log("tableId", tableId);
+
     const menuItems = useSelector((state: RootState) => state.menu.items);
     console.log("menuItems", menuItems);
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const { tableId } = useParams();
     const categories = useSelector((state: RootState) => state.category.items);
     console.log("categories from redux", categories);
 
@@ -40,14 +42,14 @@ export default function MenuByCategory() {
 
     const handleSimulatedScan = (category: any) => {
         console.log("category", category);
-        
+
         setSelectedCategory(category)
         navigate(`/menu/${tableId}`, { state: { categoryName: category.name, categoryId: category._id } });
     };
 
     const getMenu = async () => {
         try {
-            const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/menu");
+            const res = await axios.get("http://localhost:5000/api/orders/menu");
             // setMenuItemsLocal(res.data);  // Local state (optional)
             dispatch(setMenuItems(res.data)); // Redux global state
         } catch (error: any) {
@@ -58,7 +60,7 @@ export default function MenuByCategory() {
     // inside Orders component
     const getCategories = async () => {
         try {
-            const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/categories");
+            const res = await axios.get("http://localhost:5000/api/categories");
             dispatch(setCategories(res.data));
         } catch (err) {
             console.error("Failed to fetch categories", err);

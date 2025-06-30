@@ -3,9 +3,18 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart, fetchCart } from "../store/cartSlice";
 import { AddToCartFlow } from "../components/addToCartFlow/AddToCartFlow";
+import { useParams } from "react-router";
 
-export default function Order() {
+export default function Order({ onClose }: any) {
   const dispatch = useDispatch();
+  const { tableId } = useParams(); // So we can navigate back with the right tableId
+  const [language, setLanguage] = useState("en"); // default English
+
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang);
+
+    console.log("Language switched to:", lang);
+  };
 
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{
@@ -63,21 +72,23 @@ export default function Order() {
     }
   };
 
-  const sendAIMessage = async (message: string) => {
+  const sendAIMessage = async (message: string, lang: string) => {
     const res = await axios.post("http://localhost:5000/api/ai-order", {
-      tableId: "1",
+      tableId: tableId ?? "",
       message: message,
-      lang: "en",
+      lang: language,
     });
 
     console.log("AI raw response:", res.data);
 
-    const aiReply = typeof res.data.reply === "string" ? JSON.parse(res.data.reply) : res.data.reply;
+    // const aiReply = typeof res.data.reply === "string" ? JSON.parse(res.data.reply) : res.data.reply;
 
     return {
-      reply: aiReply.reply,
-      intent: aiReply.intent,
+      reply: res.data.reply || "No reply received",
+      intent: res.data.intent,
       items: res.data.items || [],
+      specialInstructions: res.data.specialInstructions || "",
+      tableId: res.data.tableId || "1"
     };
   };
 
@@ -90,11 +101,18 @@ export default function Order() {
     setLoading(true);
 
     try {
-      const data = await sendAIMessage(text);
+
+      const data = await sendAIMessage(text, language);
       console.log("data111111111111", data);
-
-      setMessages((prev) => [...prev, { from: "ai", text: data.reply, intent: data.intent, items: data.items }]);
-
+      setMessages((prev) => [
+        ...prev,
+        {
+          from: "ai",
+          text: data?.reply || "Internet issue, please try again.",
+          intent: data?.intent || "",
+          items: Array.isArray(data?.items) ? data.items : []
+        }
+      ]);
       if (shouldSpeakRef.current) {
         speakResponse(data.reply);
         shouldSpeakRef.current = false;
@@ -109,22 +127,52 @@ export default function Order() {
 
   const speakResponse = (reply: string) => {
     console.log("🗣️ Speaking:", reply);
-    const utterance = new SpeechSynthesisUtterance(reply);
-    utterance.lang = "hi-IN";
-    const voices = window.speechSynthesis.getVoices();
-    utterance.voice = voices.find((v) => v.name.includes("Google UK") || v.lang === "en-IN") || null;
 
-    // 🔑 wait for voices to load
-    if (voices.length === 0) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        const voicesNew = window.speechSynthesis.getVoices();
-        utterance.voice = voicesNew.find((v) => v.name.includes("Google UK") || v.lang === "en-IN") || null;
-        window.speechSynthesis.speak(utterance);
-      };
-    } else {
+    try {
+      const utterance = new SpeechSynthesisUtterance(reply);
+
+      const voices = window.speechSynthesis.getVoices();
+      console.log("Available voices:", voices);
+
+      // Select the best matching voice
+      const selectedVoice = voices.find(
+        (v) =>
+          v.name.includes("Google UK") ||
+          v.name.includes("Heera") ||
+          v.lang === "hi-IN" ||
+          v.lang === "en-IN"
+      );
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang; // important: match voice language
+        console.log("Selected voice:", selectedVoice);
+      } else {
+        console.warn("No suitable voice found.");
+      }
+
+      // Safe volume setting
+      utterance.volume = 1;
+      utterance.pitch = 1;
+      utterance.rate = 1;
+
+      utterance.onstart = () => console.log("Speech started");
+      utterance.onend = () => console.log("Speech ended");
+      utterance.onerror = (e) => console.error("Speech error", e);
+
+      // Cancel any previous speech first
+      window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
+
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    } catch (err) {
+      console.error("❌ Error in speakResponse:", err);
     }
   };
+
+
 
 
   const handleAddToCart = async (items: any[]) => {
@@ -138,7 +186,7 @@ export default function Order() {
 
         await dispatch(
           addToCart({
-            tableId: "1",  // or dynamically get tableId if needed
+            tableId: tableId ?? "",  // or dynamically get tableId if needed
             menuItemId: id,
             quantity,
             customizations,
@@ -147,7 +195,7 @@ export default function Order() {
       }
 
       console.log("All items added to cart:", items);
-      await dispatch(fetchCart("1")); // Refresh cart after all items added
+      await dispatch(fetchCart(tableId ?? "")); // Refresh cart after all items added
 
     } catch (err) {
       console.error("Failed to add item:", err);
@@ -155,9 +203,16 @@ export default function Order() {
   };
 
   return (
-    <div className="fixed bottom-0 right-0 m-6 w-[300px] bg-white shadow-xl rounded-lg p-4 z-50">
+    <div className="fixed bottom-0  m-6 w-[335px] bg-white shadow-xl rounded-lg p-4 h-[85%] w-[85%]">
+      <button
+        onClick={onClose}
+        className="absolute top-2 right-4 text-gray-600 hover:text-black text-lg"
+      >
+        ✖
+      </button>
+
       <h3 className="font-bold mb-2">Ask AI</h3>
-      <div className="h-[300px] overflow-y-auto text-sm mb-2">
+      <div className="h-[85%] overflow-y-auto text-sm mb-2">
         {messages.map((msg, idx) => {
           console.log("Rendering message:", msg);
 
@@ -165,18 +220,28 @@ export default function Order() {
             <div key={idx} className={`mb-1 flex flex-col ${msg.from === "user" ? "text-right" : "text-left"}`}>
               <span className={msg.from === "user" ? "text-blue-600" : "text-green-600"}>
                 {msg.text}
+                {msg.items.map((item) => (
+                  <div>{item.name.en}</div>
+                ))}
               </span>
 
+              {/* <div className="mb-4 flex justify-center space-x-2">
+                <button
+                  onClick={() => handleLanguageChange("en")}
+                  className={`px-4 py-2 rounded ${language === "en" ? "bg-blue-500 text-white" : "bg-gray-300"}`}>
+                  English
+                </button>
+                <button
+                  onClick={() => handleLanguageChange("hi")}
+                  className={`px-4 py-2 rounded ${language === "hi" ? "bg-blue-500 text-white" : "bg-gray-300"}`}>
+                  Hindi
+                </button>
+              </div> */}
               {/* If AI message has intent = order_item, show Add to Cart */}
               {msg.intent === "order_item" && msg.items?.length > 0 && (
-                // <button
-                //   className="bg-green-600 text-white px-2 py-1 rounded mt-1"
-                //   onClick={() => handleAddToCart(msg.items)}
-                // >
-                //   Add to Cart
-                // </button>
 
-                <AddToCartFlow items={msg.items} />
+
+                <AddToCartFlow items={msg.items} tableId={tableId ?? ""} />
 
               )}
             </div>

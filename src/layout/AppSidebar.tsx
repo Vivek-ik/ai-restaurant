@@ -33,11 +33,11 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     subItems: [{ name: "Ecommerce", path: "/", pro: false }],
   },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
+  // {
+  //   icon: <CalenderIcon />,
+  //   name: "Calendar",
+  //   path: "/calendar",
+  // },
   {
     icon: <CalenderIcon />,
     name: "Orders",
@@ -52,8 +52,8 @@ const navItems: NavItem[] = [
   {
 
     icon: <BoxIcon />,
-    name: "Customize Order",
-    path: "/customize-order",
+    name: "Order with ai",
+    path: "/order-with-ai",
   },
 
     {
@@ -64,12 +64,12 @@ const navItems: NavItem[] = [
   },
   
   
-  {
+  // {
 
-    icon: <BoxIcon />,
-    name: "Cart",
-    path: "/cart",
-  },
+  //   icon: <BoxIcon />,
+  //   name: "Cart",
+  //   path: "/cart",
+  // },
 
 
   {

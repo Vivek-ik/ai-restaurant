@@ -27,6 +27,7 @@ import CustomizationPage from "./pages/CustomerOrder";
 import OrderPlaced from "./pages/orderPlaced";
 import MenuByCategory from "./pages/Categories";
 import BulkUploader from "./pages/BulkMenu";
+import MainAiPage from "./pages/MainAiPage";
 
 export default function App() {
   return (
@@ -36,21 +37,25 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
+            {/* <Route index path="/" element={<Home />} /> */}
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/orders" element={<Orders />} />
-            <Route path="/customize-order" element={<CustomizationPage />} />
-            <Route path="/qr-code-scan" element={<QRScanner />} />
+            <Route path="/order-with-ai/:tableId" element={<CustomizationPage />} />
+            {/* <Route path="/qr-code-scan" element={<QRScanner />} /> */}
+
+            {/* for now we are using QRScanner as the main page */}
+            <Route path="/" element={<QRScanner />} />
             <Route path="/menu/:tableId" element={<MenuPage />} />
             <Route path="/categories/:tableId" element={<MenuByCategory />} />
 
             <Route path="/bulkedit" element={<BulkUploader />} />
-            
+
             <Route path="/cart/:tableId" element={<Cart />} />
             <Route path="/order-placed" element={<OrderPlaced />} />
+            <Route path="/main-ai-page/:tableId" element={<MainAiPage />} />
 
             <Route path="/blank" element={<Blank />} />
 

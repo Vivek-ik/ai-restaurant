@@ -41,10 +41,10 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-  const handleCustomize = () => {
-    // dispatch(addItem(item))
-    navigate(`/customize-order`);
-  };
+  // const handleCustomize = () => {
+  //   // dispatch(addItem(item))
+  //   navigate(`/order-with-ai`);
+  // };
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
@@ -102,7 +102,7 @@ const AppHeader: React.FC = () => {
             <h1 className="font-bold text-[24px]">Shreemaya</h1>
           </Link>
 
-          {location.pathname !== "/customize-order" && (
+          {/* {location.pathname !== "/customize-order" && (
 
             <button
               onClick={() => handleCustomize()}
@@ -110,7 +110,7 @@ const AppHeader: React.FC = () => {
             >
               Ask AI
             </button>
-          )}
+          )} */}
 
           <div className="hidden lg:block">
             <form>

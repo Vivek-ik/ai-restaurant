@@ -29,6 +29,7 @@ export default function Cart() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { tableId } = useParams();
+  console.log("v", tableId);
 
   const { items } = useSelector((state: any) => state.cart);
   // const bacd = useSelector((state: any) => state.cart);
@@ -45,16 +46,16 @@ export default function Cart() {
   const [isButtonDisable, setIsButtonDisable] = useState<boolean>(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
+  const [removingItemId, setRemovingItemId] = useState<string | null>(null);
 
 
   const [orders, setOrders] = useState([]);
   // const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   // console.log("bacd", bacd);
-
   useEffect(() => {
-    dispatch(fetchCart("1"));
-  }, [dispatch, isRemoveCalled]);
+    dispatch(fetchCart(tableId ?? ""));
+  }, [dispatch, isRemoveCalled, tableId]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -89,7 +90,7 @@ export default function Cart() {
     setIsPlacingOrder(true);
 
     const orderData = {
-      tableNumber: "1", // Replace with real table context
+      tableNumber: tableId, // Replace with real table context
       items: items
     };
 
@@ -108,21 +109,28 @@ export default function Cart() {
 
   const handleRemoveFromCart = async (itemId: string) => {
     console.log("68486bd3d4bb82a3cc00a94b", itemId);
+    setIsButtonDisable(true);
 
     setLoadingItemId(itemId)
     await dispatch(
       removeFromCart({
-        tableId: "1",
+        tableId: tableId ?? "",
         menuItemId: itemId,
       })
     );
+    await dispatch(fetchCart(tableId ?? ""));
+
     setIsRemoveCalled(!isRemoveCalled);
+    setIsButtonDisable(false);
   };
 
   const handleRemoveItemFromCart = async (tableId: string | undefined, itemId: string) => {
-    setLoadingItemId(itemId)
-    await dispatch(removedFromCart({ tableId: tableId ?? "1", itemId }));
-    await dispatch(fetchCart("1"));
+    setRemovingItemId(itemId);
+    // setLoadingItemId(itemId)
+    await dispatch(removedFromCart({ tableId: tableId ?? "", itemId }));
+    await dispatch(fetchCart(tableId ?? ""));
+    setRemovingItemId(null);
+
   };
 
 
@@ -133,7 +141,7 @@ export default function Cart() {
     try {
       await dispatch(
         addToCart({
-          tableId: "1",
+          tableId: tableId ?? "",
           menuItemId: itemId,
           quantity: 1,
           customizations: ["No Onion"],
@@ -153,12 +161,18 @@ export default function Cart() {
   return (
     <div className="max-w-2xl mx-auto mb-[70px]">
       <BackButton buttonText="Back to Menu" />
-      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Your Order</h2>
+      <h2 className="bg-white text-lg font-semibold text-gray-800 dark:text-white px-4 pb-0">Your Order</h2>
 
       {items.length === 0 ? (
-        <p className="text-gray-500">No items in your order.</p>
+        <div>
+          <p className="flex justify-center items-end text-gray-500 p-4 text-center bg-white h-[144px]">No items in your order.</p>
+          <div className=" flex items-center justify-center p-4 bg-white">
+            <img src="../../../public/images/empty-cart-photo.jpg" />
+
+          </div>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           {items?.length === 0 ? (
             <p>Your cart is empty.</p>
           ) : (
@@ -182,7 +196,6 @@ export default function Cart() {
                           <span className="text-lg pb-[5px] text-right font-semibold">{item?.menuItem?.itemName?.en}</span>
                           <p className="text-sm pb-[10px] text-gray-600">₹{item?.menuItem?.price} × {item?.quantity}</p>
                           <div className="flex items-center justify-end gap-1">
-                            {/* : <> */}
                             <button
                               disabled={isButtonDisable}
                               onClick={() => handleRemoveFromCart(item.menuItem._id)}
@@ -198,7 +211,6 @@ export default function Cart() {
                             >
                               +
                             </button>
-                            {/* </>} */}
                           </div>
                         </div>
                         <div className="ml-4">
@@ -216,6 +228,8 @@ export default function Cart() {
 
                     <div className="flex flex-row sm:flex-row gap-3 mt-2">
                       <button
+                        disabled={removingItemId === item.menuItem._id}
+
                         onClick={() => {
                           // dispatch(removeItem(item.id));
                           // handleRemoveFromCart(item.menuItem._id)
@@ -223,7 +237,13 @@ export default function Cart() {
                         }}
                         className="w-full sm:w-auto px-4 py-2 text-sm font-semibold rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow hover:from-red-600 hover:to-red-700 transition-all duration-200"
                       >
-                        🗑 Remove
+                        {removingItemId === item.menuItem._id ? (
+                          <span className="flex items-center justify-center">
+                            <Loader height="16px" width="16px" />
+                          </span>
+                        ) : (
+                          `🗑 Remove`
+                        )}
                       </button>
 
                       {item.customizableOptions && (

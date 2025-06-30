@@ -63,7 +63,9 @@ export default function QRScanner() {
   const navigate = useNavigate();
 
   const handleSimulatedScan = (tableId: number) => {
-    navigate(`/categories/${tableId}`);
+    // navigate(`/categories/${tableId}`);
+    // navigate(`order-with-ai/${tableId}`);
+    navigate(`main-ai-page/${tableId}`);
   };
 
   return (

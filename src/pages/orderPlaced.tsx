@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageMeta from "../components/common/PageMeta";
 import { CheckCircle } from "lucide-react";
 import { useDispatch } from "react-redux";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 export default function OrderPlaced() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { tableId } = useParams();
   const [menuItemsLocal, setMenuItemsLocal] = useState<any[]>([]);
   console.log("Order Placed Page Rendered", menuItemsLocal);
 
@@ -50,12 +51,21 @@ export default function OrderPlaced() {
             <button
               onClick={() => {
                 dispatch(clearOrder())
-                navigate("/menu/:1")
+                navigate(`/menu/${tableId}`)
               }}
               className="w-full py-2 rounded-lg bg-black text-white font-medium hover:bg-opacity-90 transition"
             >
               Order More
             </button>
+             {/* <button
+              onClick={() => {
+                dispatch(clearOrder())
+                navigate("/cart/1")
+              }}
+              className="w-full py-2 rounded-lg bg-black text-white font-medium hover:bg-opacity-90 transition"
+            >
+              View Cart
+            </button> */}
           </div>
         </div>
       </div>
