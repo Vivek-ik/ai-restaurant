@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart, clearCart, fetchCart, removeFromCart } from "../../store/cartSlice";
 import axios from "axios";
+import { API_URL } from "../../config";
 
 type ItemType = {
     id: string;
@@ -75,16 +76,18 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
 
     const handleSubmitOrder = async () => {
         try {
-            const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/orders", {
+            const res = await axios.post(`${API_URL}/api/orders`, {
                 tableNumber: tableId,
                 items: items.map((item) => ({
                     id: item.id,
                     quantity: quantities[item.id],
                 })),
             });
+
             console.log("Order placed:", res.data);
             dispatch(clearCart());
             navigate("/order-placed", { replace: true });
+
         } catch (error: any) {
             console.error("Order failed:", error.response?.data || error.message);
         }

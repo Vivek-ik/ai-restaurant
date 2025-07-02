@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { addToCart, fetchCart } from "../store/cartSlice";
 import { AddToCartFlow } from "../components/addToCartFlow/AddToCartFlow";
 import { useParams } from "react-router";
+import { api } from "../api";
 
 export default function Order({ onClose }: any) {
   const dispatch = useDispatch();
@@ -71,9 +72,8 @@ export default function Order({ onClose }: any) {
       recognitionRef.current.start();
     }
   };
-
   const sendAIMessage = async (message: string, lang: string) => {
-    const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/ai-order", {
+    const res = await api.post("/api/ai-order", {
       tableId: tableId ?? "",
       message: message,
       lang: language,
@@ -81,17 +81,14 @@ export default function Order({ onClose }: any) {
 
     console.log("AI raw response:", res.data);
 
-    // const aiReply = typeof res.data.reply === "string" ? JSON.parse(res.data.reply) : res.data.reply;
-
     return {
       reply: res.data.reply || "No reply received",
       intent: res.data.intent,
       items: res.data.items || [],
       specialInstructions: res.data.specialInstructions || "",
-      tableId: res.data.tableId || "1"
+      tableId: res.data.tableId || "1",
     };
   };
-
   const handleSend = async (customInput: string) => {
     const text = customInput || input;
     if (!text.trim()) return;

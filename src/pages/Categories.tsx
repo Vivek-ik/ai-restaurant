@@ -5,6 +5,8 @@ import { RootState } from "../store";
 import { setMenuItems } from "../store/menuSlice";
 import axios from "axios";
 import { setCategories } from "../store/categorySlice";
+import { Loader } from "lucide-react";
+import { api } from "../api";
 // import { dummyMenuItems } from "./MenuPage";
 
 
@@ -50,9 +52,9 @@ export default function MenuByCategory() {
 
     const getMenu = async () => {
         try {
-            const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/menu");
-            // setMenuItemsLocal(res.data);  // Local state (optional)
-            dispatch(setMenuItems(res.data)); // Redux global state
+            const res = await api.get("/api/orders/menu");
+            // setMenuItemsLocal(res.data); // if using local state
+            dispatch(setMenuItems(res.data)); // Redux
         } catch (error: any) {
             console.error("Error fetching menu", error);
         }
@@ -61,7 +63,7 @@ export default function MenuByCategory() {
     // inside Orders component
     const getCategories = async () => {
         try {
-            const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/categories");
+            const res = await api.get("/api/categories");
             dispatch(setCategories(res.data));
         } catch (err) {
             console.error("Failed to fetch categories", err);
@@ -93,7 +95,8 @@ export default function MenuByCategory() {
 
             {isLoading ? (
                 <div className="flex justify-center items-center mt-10">
-                    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-10 h-10 rounded-full animate-spin" />
+                    <Loader className="animate-spin h-8 w-8 text-yellow-500" />
                     <span className="ml-3 text-orange-500 font-medium">Loading categories...</span>
                 </div>
             ) : (

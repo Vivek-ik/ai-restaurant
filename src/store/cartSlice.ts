@@ -1,13 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { api } from "../api";
 
-export const fetchCart = createAsyncThunk(
-  "cart/fetchCart",
-  async (tableId: string) => {
-    const res = await axios.get(`https://ai-restaurant-backend-production.up.railway.app/api/cart/${tableId}`);
-    return res.data;
-  }
-);
 
 interface AddToCartArgs {
   tableId: string;
@@ -16,10 +10,20 @@ interface AddToCartArgs {
   customizations?: any;
 }
 
+// Fetch Cart
+export const fetchCart = createAsyncThunk(
+  "cart/fetchCart",
+  async (tableId: string) => {
+    const res = await api.get(`/api/cart/${tableId}`);
+    return res.data;
+  }
+);
+
+// Remove Single Item
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async ({ tableId, menuItemId }: { tableId: string; menuItemId: string }) => {
-    const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/cart/remove", {
+    const res = await api.post("/api/cart/remove", {
       tableId,
       menuItemId,
     });
@@ -27,10 +31,21 @@ export const removeFromCart = createAsyncThunk(
   }
 );
 
+// Add Item to Cart
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ tableId, menuItemId, quantity, customizations }: AddToCartArgs) => {
-    const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/cart/add", {
+  async ({
+    tableId,
+    menuItemId,
+    quantity,
+    customizations,
+  }: {
+    tableId: string;
+    menuItemId: string;
+    quantity: number;
+    customizations?: any;
+  }) => {
+    const res = await api.post("/api/cart/add", {
       tableId,
       menuItemId,
       quantity,
@@ -40,16 +55,18 @@ export const addToCart = createAsyncThunk(
   }
 );
 
+// Remove Entire Cart Item
 export const removedFromCart = createAsyncThunk(
   "cart/removedFromCart",
   async ({ tableId, itemId }: { tableId: string; itemId: string }) => {
-    const res = await axios.post(
-      "https://ai-restaurant-backend-production.up.railway.app/api/cart/remove-cart-item",
-      { tableId, itemId }
-    );
-    return res.data; // { items: [...] }
+    const res = await api.post("/api/cart/remove-cart-item", {
+      tableId,
+      itemId,
+    });
+    return res.data;
   }
 );
+
 
 const cartSlice = createSlice({
   name: "cart",

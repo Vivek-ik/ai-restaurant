@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router";
 import axios from "axios";
 import { addToCart, clearCart, fetchCart, removedFromCart, removeFromCart } from "../../store/cartSlice";
 import { Loader } from "lucide-react";
+import { api } from "../../api";
 
 
 type MenuItem = {
@@ -60,7 +61,7 @@ export default function Cart() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders"); // Adjust baseURL if needed
+        const res = await api.get("/api/orders");
         setOrders(res.data);
       } catch (err: any) {
         setError(err?.response?.data?.error || "Failed to fetch orders");
@@ -86,16 +87,15 @@ export default function Cart() {
   };
 
   const handleSubmit = async () => {
-    // if (!selectedItem) return;
     setIsPlacingOrder(true);
 
     const orderData = {
-      tableNumber: tableId, // Replace with real table context
-      items: items
+      tableNumber: tableId,
+      items: items,
     };
 
     try {
-      const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/orders", orderData);
+      const res = await api.post("/api/orders", orderData);
       console.log("Order placed:", res.data);
       dispatch(clearCart());
       navigate("/order-placed", { replace: true });

@@ -4,6 +4,7 @@ import AiChatModal from '../components/AiChatModal/AiChatModal';
 import Order from './CustomerOrder';
 import { useNavigate, useParams } from 'react-router';
 import { AddToCartFlow } from '../components/addToCartFlow/AddToCartFlow';
+import { api } from '../api';
 
 const VoiceAssistantUI = () => {
 
@@ -17,7 +18,14 @@ const VoiceAssistantUI = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [aiReply, setAiReply] = useState<string[]>([]);
   const [showChat, setShowChat] = useState(false);
-  const [items, setItems] = useState([]);
+  type Item = {
+    name: { en: string; [key: string]: string };
+    price: number;
+    quantity: number;
+    specialInstructions?: string;
+    [key: string]: any;
+  };
+  const [items, setItems] = useState<Item[]>([]);
   const [intent, setIntent] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,24 +40,21 @@ const VoiceAssistantUI = () => {
     utterance.lang = language === 'English' ? 'en-IN' : 'hi-IN';
     window.speechSynthesis.speak(utterance);
   };
+
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
 
     setMessages(prev => [...prev, { from: 'user', text }]);
-    setIsLoading(true); // ⬅️ Start loading
+    setIsLoading(true);
 
     try {
-      const res = await fetch('https://ai-restaurant-backend-production.up.railway.app/api/ai-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          lang: language === 'English' ? 'en' : 'hi',
-          tableId: tableId || '1',
-        }),
+      const res = await api.post("/api/ai-order", {
+        message: text,
+        lang: language === "English" ? "en" : "hi",
+        tableId: tableId || "1",
       });
 
-      const data = await res.json();
+      const data = res.data;
 
       setMessages(prev => [...prev, { from: 'ai', text: data.reply }]);
       setIntent(data.intent);
@@ -60,7 +65,7 @@ const VoiceAssistantUI = () => {
       console.error("AI error", err);
     } finally {
       setLiveTranscript("");
-      setIsLoading(false); // ⬅️ Stop loading
+      setIsLoading(false);
     }
   };
 
@@ -113,7 +118,7 @@ const VoiceAssistantUI = () => {
       {(isListening || aiReply.length > 0 || isLoading) && (
         <div className="bg-white p-4 text-gray-700 rounded-md mb-3 w-full max-w-md">
           {isListening && (
-            <div className="flex items-center justify-center p-3 rounded-xl text-gray-800 text-lg">
+            <div className="flex items-center justify-center -*p-3 rounded-xl text-gray-800 text-lg">
               🎙️ {liveTranscript || 'Listening...'}
             </div>
           )}
@@ -130,8 +135,32 @@ const VoiceAssistantUI = () => {
               {aiReply.map((reply, index) => (
                 <p key={index} className="text-gray-600">{reply}</p>
               ))}
-              {intent === "order_item" && items?.length > 0 && (
-                <AddToCartFlow items={items} tableId={tableId ?? ""} />
+              {['order_item', 'customize_order'].includes(intent ?? '') && items?.length > 0 && (
+                <div className="mt-3">
+                  {items.map((item, idx) => (
+                    <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-blue-900">{item.name.en}</h3>
+                        <span className="text-sm text-blue-700">₹{item.price}</span>
+                      </div>
+                      <p className="text-sm text-blue-800">Quantity: {item.quantity}</p>
+                      {item.specialInstructions && (
+                        <p className="text-sm text-orange-600 italic">📝 {item.specialInstructions}</p>
+                      )}
+                    </div>
+                  ))}
+                  <div className="mt-2">
+                    <AddToCartFlow
+                      items={items.map((item, idx) => ({
+                        id: item.id ?? `${item.name?.en ?? 'item'}-${idx}`,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                      }))}
+                      tableId={tableId ?? ""}
+                    />
+                  </div>
+                </div>
               )}
             </div>
           )}

@@ -3,8 +3,8 @@ import PageMeta from "../components/common/PageMeta";
 import { CheckCircle } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { clearOrder } from "../store/orderSlice";
-import axios from "axios";
 import { useEffect, useState } from "react";
+import { api } from "../api";
 
 export default function OrderPlaced() {
   const navigate = useNavigate();
@@ -16,11 +16,12 @@ export default function OrderPlaced() {
   useEffect(() => {
     getMenu();
   }, [])
+
   const getMenu = async () => {
     try {
-      const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/");
-      setMenuItemsLocal(res.data);  // Local state (optional)
-      // dispatch(setMenuItems(res.data)); // Redux global state
+      const res = await api.get("/api/orders/");
+      setMenuItemsLocal(res.data); // Local state only
+      // dispatch(setMenuItems(res.data)); // Optional Redux usage
     } catch (error: any) {
       console.error("Error fetching menu", error);
     }
@@ -57,7 +58,7 @@ export default function OrderPlaced() {
             >
               Order More
             </button>
-             {/* <button
+            {/* <button
               onClick={() => {
                 dispatch(clearOrder())
                 navigate("/cart/1")

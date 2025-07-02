@@ -9,6 +9,7 @@ import { setMenuItems } from "../store/menuSlice";
 import { addToCart, fetchCart, removeFromCart } from "../store/cartSlice";
 import { RootState } from "../store";
 import { ArrowLeft, Loader } from "lucide-react";
+import { api } from "../api";
 
 export const dummyMenuItems = [
   {
@@ -162,13 +163,12 @@ const Orders = () => {
 
   console.log("itemsToDisplay", itemsToDisplay);
 
-
   const getMenu = async () => {
     try {
       setIsMenuLoading(true);
-      const res = await axios.get("https://ai-restaurant-backend-production.up.railway.app/api/orders/menu");
-      setMenuItemsLocal(res.data);  // Local state (optional)
-      dispatch(setMenuItems(res.data)); // Redux global state
+      const res = await api.get("/api/orders/menu");
+      setMenuItemsLocal(res.data);      // Optional local state
+      dispatch(setMenuItems(res.data)); // Redux state
     } catch (error: any) {
       console.error("Error fetching menu", error);
     } finally {

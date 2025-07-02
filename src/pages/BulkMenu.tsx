@@ -1,6 +1,7 @@
 // BulkUploader.tsx
 import React, { useState } from "react";
 import axios from "axios";
+import { api } from "../api";
 
 export default function BulkUploader() {
     const [jsonData, setJsonData] = useState(
@@ -127,13 +128,12 @@ export default function BulkUploader() {
                 allergens: ["Fish", "Mustard"]
             },
         ]
-  );
+    );
     const [message, setMessage] = useState("");
 
     const handleUpload = async () => {
         try {
-            // const parsed = JSON.parse(jsonData);
-            const res = await axios.post("https://ai-restaurant-backend-production.up.railway.app/api/menu-items/bulk-insert", jsonData);
+            const res = await api.post("/api/menu-items/bulk-insert", jsonData);
             setMessage(`✅ Inserted ${res.data.data.length} items successfully`);
         } catch (error: any) {
             setMessage(`❌ Error: ${error.response?.data?.message || error.message}`);
