@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { api } from "../api";
 
-
 interface AddToCartArgs {
   tableId: string;
   menuItemId: string;
@@ -67,7 +66,6 @@ export const removedFromCart = createAsyncThunk(
   }
 );
 
-
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -112,14 +110,14 @@ const cartSlice = createSlice({
         state.loading = true;
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
+        console.log("removeFromCart fulfilled", action);
         state.loading = false;
-        // state.items = action.payload.items;
       })
       .addCase(removeFromCart.rejected, (state) => {
         state.loading = false;
       });
-    // remove from cart
 
+    // remove from cart
     builder
       .addCase(removedFromCart.pending, (state, action) => {
         state.loading = true;

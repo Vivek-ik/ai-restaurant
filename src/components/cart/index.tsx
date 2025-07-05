@@ -194,7 +194,13 @@ export default function Cart() {
                       <div>
                         <div className="ml-4 flex flex-col items-end flex-col">
                           <span className="text-lg pb-[5px] text-right font-semibold">{item?.menuItem?.itemName?.en}</span>
-                          <p className="text-sm pb-[10px] text-gray-600">₹{item?.menuItem?.price} × {item?.quantity}</p>
+                          <p className="text-sm text-gray-600">₹{item?.menuItem?.price} × {item?.quantity}</p>
+                           {item.customizations?.length > 0 && (
+                            <div className="text-sm  py-2">
+                              <span className="font-medium">Customizations:</span>{" "}
+                              {item.customizations.join(", ")}
+                            </div>
+                          )}
                           <div className="flex items-center justify-end gap-1">
                             <button
                               disabled={isButtonDisable}
@@ -219,9 +225,7 @@ export default function Cart() {
                             Custom: {item.customizableOptions.join(", ")}
                           </p>
                         )} */}
-                          {item.note && (
-                            <p className="text-sm italic text-gray-400 mt-1">Note: {item.note}</p>
-                          )}
+                         
                         </div>
                       </div>
                     </div>

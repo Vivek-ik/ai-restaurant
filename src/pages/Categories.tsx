@@ -95,14 +95,13 @@ export default function MenuByCategory() {
 
             {isLoading ? (
                 <div className="flex justify-center items-center mt-10">
-                    <div className="w-10 h-10 rounded-full animate-spin" />
                     <Loader className="animate-spin h-8 w-8 text-yellow-500" />
                     <span className="ml-3 text-orange-500 font-medium">Loading categories...</span>
                 </div>
             ) : (
                 <>
                     {/* Category Grid */}
-                    {!selectedCategory && (
+                    {!selectedCategory && categories.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {categories.map((category: any) => {
                                 console.log("category", category);
@@ -126,7 +125,14 @@ export default function MenuByCategory() {
                             })}
 
                         </div>
-                    )}
+                    )
+
+                        : <>
+                            <div className="flex items-center justify-center h-64">
+                                No Data Found
+                            </div>
+
+                        </>}
 
                     {/* Items Grid */}
                     {selectedCategory && (

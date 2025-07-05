@@ -2,7 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageMeta from "../components/common/PageMeta";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem } from "../store/orderSlice";
+import { addItem, removeItem } from "../store/orderSlice";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { setMenuItems } from "../store/menuSlice";
@@ -160,6 +160,7 @@ const Orders = () => {
   const [itemsToDisplay, setItemsToDisplay] = useState<any[]>([]);
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
+  const [isRemovingItem, setIsRemovingItem] = useState(false);
 
   console.log("itemsToDisplay", itemsToDisplay);
 
@@ -178,7 +179,7 @@ const Orders = () => {
 
   useEffect(() => {
     dispatch(fetchCart(tableId ?? ""));
-  }, [dispatch, tableId]);
+  }, [dispatch, tableId, isRemovingItem]);
 
   useEffect(() => {
     getMenu()
@@ -197,7 +198,7 @@ const Orders = () => {
 
 
   const getCartItem = (itemId: string): CartItem | undefined => {
-    return items.find((ci: CartItem) => ci.menuItem._id === itemId);
+    return items?.find((ci: CartItem) => ci.menuItem._id === itemId);
   };
 
   const handleRemoveFromCart = async (itemId: string) => {
@@ -210,15 +211,15 @@ const Orders = () => {
           menuItemId: itemId,
         })
       );
-
-      await dispatch(fetchCart(tableId ?? "")); // Refresh cart
+      setIsRemovingItem(!isRemovingItem)
+      // await dispatch(fetchCart(tableId ?? "")); // Refresh cart
+ 
     } catch (err) {
       console.error("Failed to remove item:", err);
     }
   };
 
   const handleAddToCart = async (itemId: string) => {
-    console.log("handleAddToCart called with itemId:", itemId);
     setLoadingItemId(itemId);
 
     try {
@@ -307,7 +308,6 @@ const Orders = () => {
                           <>
                             <button
                               onClick={() => {
-                                // dispatch(removeItem(item.id));
                                 handleRemoveFromCart(item?._id)
                               }}
                               className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"

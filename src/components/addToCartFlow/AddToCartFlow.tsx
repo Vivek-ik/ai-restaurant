@@ -6,6 +6,8 @@ import axios from "axios";
 import { API_URL } from "../../config";
 
 type ItemType = {
+    specialInstructions: any;
+    customizations: any;
     id: string;
     name: { en: string; hi?: string };
     price: number;
@@ -35,7 +37,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
                     tableId,
                     menuItemId: item.id,
                     quantity,
-                    customizations: [],
+                customizations: item.specialInstructions ? [item.specialInstructions] : [],
                 })
             );
             setAddedItems((prev) => ({ ...prev, [item.id]: true }));
@@ -102,6 +104,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
                 >
                     <div>
                         <p className="font-semibold">{item.name.en}</p>
+                        <p className="text-sm text-gray-600">{item.specialInstructions}</p>
                         <p className="text-sm text-gray-600">₹{item.price}</p>
                     </div>
 
