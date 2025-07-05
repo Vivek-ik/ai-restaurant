@@ -6,6 +6,15 @@ import { useNavigate, useParams } from 'react-router';
 import { AddToCartFlow } from '../components/addToCartFlow/AddToCartFlow';
 import { api } from '../api';
 
+export type Item = {
+    name: { en: string;[key: string]: string };
+    price: number;
+    quantity: number;
+    specialInstructions?: any;
+    [key: string]: any;
+  };
+ 
+
 const VoiceAssistantUI = () => {
 
   const navigate = useNavigate();
@@ -20,13 +29,6 @@ const VoiceAssistantUI = () => {
   const [showChat, setShowChat] = useState(false);
   const [itemsByCategory, setItemsByCategory] = useState();
 
-  type Item = {
-    name: { en: string;[key: string]: string };
-    price: number;
-    quantity: number;
-    specialInstructions?: any;
-    [key: string]: any;
-  };
   const [items, setItems] = useState<Item[]>([]);
   const [intent, setIntent] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -127,7 +129,7 @@ const VoiceAssistantUI = () => {
 
       <div className="bg-blue-100 border border-blue-300 px-6 py-2 rounded-xl text-center mb-3 shadow">
         <p className="font-semibold text-xl text-blue-900">Press and Ask</p>
-        <p className="text-sm text-blue-700">e.g., Order masala dosa?”</p>
+        <p className="text-sm text-blue-700">Aaj menu me kya h?</p>
       </div>
 
       {(isListening || aiReply.length > 0 || isLoading) && (

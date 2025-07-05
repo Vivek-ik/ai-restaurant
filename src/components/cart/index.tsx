@@ -160,7 +160,7 @@ export default function Cart() {
 
   return (
     <div className="max-w-2xl mx-auto mb-[70px]">
-      <BackButton buttonText="Back to Menu" />
+      <BackButton buttonText="Back to Menu" bgTransparent={true}/>
       <h2 className="bg-white text-lg font-semibold text-gray-800 dark:text-white px-4 pb-0">Your Order</h2>
 
       {items.length === 0 ? (

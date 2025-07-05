@@ -7,6 +7,7 @@ import axios from "axios";
 import { setCategories } from "../store/categorySlice";
 import { Loader } from "lucide-react";
 import { api } from "../api";
+import BackButton from "../components/backButton/BackButton";
 // import { dummyMenuItems } from "./MenuPage";
 
 
@@ -88,7 +89,10 @@ export default function MenuByCategory() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-10 px-6">
+        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-10 pt-5 px-6">
+            <BackButton buttonText="Back to Menu"
+                bgTransparent={true}
+            />
             <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-10">
                 🍽️ What would you like to eat today?
             </h2>

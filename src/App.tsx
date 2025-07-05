@@ -52,7 +52,7 @@ export default function App() {
             <Route path="/bulkedit" element={<BulkUploader />} />
 
             <Route path="/cart/:tableId" element={<Cart />} />
-            <Route path="/order-placed" element={<OrderPlaced />} />
+            <Route path="/order-placed/:tableId" element={<OrderPlaced />} />
             <Route path="/main-ai-page/:tableId" element={<MainAiPage />} />
 
             <Route path="/blank" element={<Blank />} />

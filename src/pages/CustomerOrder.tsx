@@ -1,10 +1,11 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart, fetchCart } from "../store/cartSlice";
 import { AddToCartFlow } from "../components/addToCartFlow/AddToCartFlow";
 import { useParams } from "react-router";
 import { api } from "../api";
+import { Item } from "./MainAiPage";
 
 type Message = {
   from: string;
@@ -26,6 +27,10 @@ export default function Order({ onClose }: any) {
       intent: "", items: []
     }
   ]);
+  const [itemsByCategory, setItemsByCategory] = useState();
+  const [intent, setIntent] = useState();
+
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -90,6 +95,7 @@ export default function Order({ onClose }: any) {
       items: res.data.items || [],
       specialInstructions: res.data.specialInstructions || "",
       tableId: res.data.tableId || "1",
+      itemsByCategory: res.data.itemsByCategory || {},
     };
   };
 
@@ -101,16 +107,20 @@ export default function Order({ onClose }: any) {
 
     try {
       const data = await sendAIMessage(text, language);
+      setMessages((prev) => [
+        ...prev,
+        {
+          from: "ai",
+          text: data.reply || "Internet issue, please try again.",
+          intent: data.intent || "",
+          items: Array.isArray(data.items) ? data.items : [],
+        },
+      ]);
+      setItemsByCategory(data.itemsByCategory || {});
+      setIntent(data.intent);
 
-      const newMsg = {
-        from: "ai",
-        text: data.reply || "Internet issue, please try again.",
-        intent: data.intent || "",
-        items: Array.isArray(data.items) ? data.items : [],
-      };
-
-      setMessages(prev => [...prev, newMsg]);
       speakResponse(data.reply);
+      setItems(data.items || []);
     } catch (err) {
       console.error("AI Error:", err);
       setMessages(prev => [...prev, { from: "ai", text: "❌ AI failed to respond.", intent: "", items: [] }]);
@@ -148,6 +158,20 @@ export default function Order({ onClose }: any) {
     }
   };
 
+
+  // group items by category name
+  const groupedItems = useMemo(() => {
+    const map: { [category: string]: any[] } = {};
+
+    items?.forEach((item: any) => {
+      const categoryName = item.category?.name || "Uncategorized";
+      if (!map[categoryName]) map[categoryName] = [];
+      map[categoryName].push(item);
+    });
+
+    return map;
+  }, [items]);
+
   return (
     <div className="fixed bottom-0 m-6 w-[335px] bg-white shadow-xl rounded-lg p-4 h-[85%] w-[85%]">
       <button onClick={onClose} className="absolute top-2 right-4 text-gray-600 hover:text-black text-lg">
@@ -160,15 +184,15 @@ export default function Order({ onClose }: any) {
           <div key={idx} className={`mb-1 flex flex-col ${msg.from === "user" ? "text-right" : "text-left"}`}>
             <span className={msg.from === "user" ? "text-blue-600" : "text-green-600"}>
               {msg.text}
-              {msg.items.map((item, i) => (
+              {/* {msg.items.map((item, i) => (
                 <div key={i}>
                   <div>{item?.itemName?.en}</div>
                   <span>{item.specialInstructions}</span>
                 </div>
-              ))}
+              ))} */}
             </span>
 
-            {msg.intent === "menu_browsing" && msg.category && (
+            {/* {msg.intent === "menu_browsing" && msg.category && (
               <div className="space-y-4">
                 {Object.entries(msg.category).map(([cat, items]) => (
                   <div key={cat}>
@@ -181,8 +205,33 @@ export default function Order({ onClose }: any) {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
 
+            {msg.intent === "menu_browsing" && msg.items.length > 0 && (() => {
+              const map: { [category: string]: any[] } = {};
+              msg.items.forEach((item) => {
+                const cat = item.category?.name || "Uncategorized";
+                if (!map[cat]) map[cat] = [];
+                map[cat].push(item);
+              });
+
+              return (
+                <div className="space-y-4 mt-2">
+                  {Object.entries(map).map(([cat, items]) => (
+                    <div key={cat}>
+                      <h3 className="text-xl font-bold text-blue-800">{cat}</h3>
+                      <ul className="list-disc list-inside text-gray-700">
+                        {items.map((item, i) => (
+                          <li key={i}>
+                            {item.itemName?.en} – ₹{item.price}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
             {msg.intent === "order_item" && msg.items?.length > 0 && (
               <AddToCartFlow items={msg.items} tableId={tableId ?? ""} />
             )}

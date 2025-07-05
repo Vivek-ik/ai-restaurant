@@ -17,7 +17,7 @@ type ItemType = {
 export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: string }) {
     const [quantities, setQuantities] = useState(() =>
         items.reduce((acc, item) => {
-            acc[item.id] = item.quantity || 1;
+                acc[item.id] = item.quantity ?? 1;
             return acc;
         }, {} as Record<string, number>)
     );
@@ -55,8 +55,8 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
     };
 
     const handleDecrement = async (item: ItemType) => {
-        const currentQty = quantities[item.id] || 1;
-        if (currentQty <= 1) return;
+        const currentQty = quantities[item.id];
+        if (currentQty <= 0) return;
 
         setQuantities((prev) => ({ ...prev, [item.id]: currentQty - 1 }));
 
@@ -88,7 +88,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
 
             console.log("Order placed:", res.data);
             dispatch(clearCart());
-            navigate("/order-placed", { replace: true });
+            navigate(`/order-placed/:${tableId}`, { replace: true });
 
         } catch (error: any) {
             console.error("Order failed:", error.response?.data || error.message);
