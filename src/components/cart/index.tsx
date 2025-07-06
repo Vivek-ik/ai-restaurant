@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import CustomizationModal from "../customizationModal/CustomizationModal";
 // import { dummyMenuItems } from "../../pages/MenuPage";
 import { useNavigate, useParams } from "react-router";
-import axios from "axios";
 import { addToCart, clearCart, fetchCart, removedFromCart, removeFromCart } from "../../store/cartSlice";
 import { Loader } from "lucide-react";
 import { api } from "../../api";
@@ -167,8 +166,7 @@ export default function Cart() {
         <div>
           <p className="flex justify-center items-end text-gray-500 p-4 text-center bg-white h-[144px]">No items in your order.</p>
           <div className=" flex items-center justify-center p-4 bg-white">
-            <img src="../../../public/images/empty-cart-photo.jpg" />
-
+            <img src="../../../public/images/empty-cart-img.png" />
           </div>
         </div>
       ) : (
