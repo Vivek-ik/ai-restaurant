@@ -43,7 +43,7 @@ export default function OrderPlaced() {
 
           <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-left space-y-2 text-sm">
             <p><span className="font-semibold">Order ID:</span> #123456</p>
-            <p><span className="font-semibold">Table:</span> 1</p>
+            <p><span className="font-semibold">Table:</span>{tableId}</p>
             <p><span className="font-semibold">Estimated Time:</span> 20-25 mins</p>
             <p><span className="font-semibold">Status:</span> Preparing</p>
           </div>

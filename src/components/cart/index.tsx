@@ -98,7 +98,7 @@ export default function Cart() {
       const res = await api.post("/api/orders", orderData);
       console.log("Order placed:", res.data);
       dispatch(clearCart());
-      navigate("/order-placed", { replace: true });
+      navigate(`/order-placed/${tableId}`, { replace: true });
     } catch (error: any) {
       console.error(error);
       setErrorMessage(error.response?.data?.error || "Failed to place order.");
@@ -144,7 +144,7 @@ export default function Cart() {
           tableId: tableId ?? "",
           menuItemId: itemId,
           quantity: 1,
-          customizations: ["No Onion"],
+          // customizations: ,
         })
       );
 
@@ -159,8 +159,8 @@ export default function Cart() {
 
 
   return (
-    <div className="max-w-2xl mx-auto mb-[70px]">
-      <BackButton buttonText="Back to Menu" bgTransparent={true}/>
+    <div className="max-w-2xl mx-auto mb-[70px] p-2">
+      <BackButton buttonText="Back to Menu" bgTransparent={true} />
       <h2 className="bg-white text-lg font-semibold text-gray-800 dark:text-white px-4 pb-0">Your Order</h2>
 
       {items.length === 0 ? (
@@ -177,7 +177,7 @@ export default function Cart() {
             <p>Your cart is empty.</p>
           ) : (
             items.map((item: any) => {
-              console.log("item._id", item);
+              console.log("em.customizations?.length", item);
 
               return (
                 <div
@@ -195,12 +195,12 @@ export default function Cart() {
                         <div className="ml-4 flex flex-col items-end flex-col">
                           <span className="text-lg pb-[5px] text-right font-semibold">{item?.menuItem?.itemName?.en}</span>
                           <p className="text-sm text-gray-600">₹{item?.menuItem?.price} × {item?.quantity}</p>
-                           {item.customizations?.length > 0 && (
+                          {/* {item.customizations?.length > 0 && item.customizations[item._id] !== "" && (
                             <div className="text-sm  py-2">
                               <span className="font-medium">Customizations:</span>{" "}
                               {item.customizations.join(", ")}
                             </div>
-                          )}
+                          )} */}
                           <div className="flex items-center justify-end gap-1">
                             <button
                               disabled={isButtonDisable}
@@ -225,7 +225,7 @@ export default function Cart() {
                             Custom: {item.customizableOptions.join(", ")}
                           </p>
                         )} */}
-                         
+
                         </div>
                       </div>
                     </div>

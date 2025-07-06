@@ -45,11 +45,13 @@ export const addToCart = createAsyncThunk(
     customizations?: any;
   }) => {
     const res = await api.post("/api/cart/add", {
+      
       tableId,
       menuItemId,
       quantity,
       customizations,
     });
+    console.log("quantitywww", quantity)
     return res.data.cart;
   }
 );

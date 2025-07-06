@@ -17,7 +17,7 @@ type ItemType = {
 export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: string }) {
     const [quantities, setQuantities] = useState(() =>
         items.reduce((acc, item) => {
-                acc[item.id] = item.quantity ?? 1;
+            acc[item.id] = item.quantity ?? 1;
             return acc;
         }, {} as Record<string, number>)
     );
@@ -28,7 +28,9 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
     const dispatch = useDispatch();
 
     const handleAddToCart = async (item: ItemType) => {
-        const quantity = quantities[item.id] || 1;
+        const quantity = quantities[item.id];
+        console.log("quantity", quantity);
+
         setLoadingItemId(item.id);
 
         try {
@@ -36,8 +38,8 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
                 addToCart({
                     tableId,
                     menuItemId: item.id,
-                    quantity,
-                customizations: item.specialInstructions ? [item.specialInstructions] : [],
+                    quantity: quantity === 0 ? quantity + 1 : quantity,
+                    customizations: item.specialInstructions ? [item.specialInstructions] : [],
                 })
             );
             setAddedItems((prev) => ({ ...prev, [item.id]: true }));
@@ -49,9 +51,11 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
     };
 
     const handleIncrement = async (item: ItemType) => {
-        const newQty = (quantities[item.id] || 1) + 1;
+        const newQty = (quantities[item.id]) + 1;
+        console.log("newQty", newQty);
+
         setQuantities((prev) => ({ ...prev, [item.id]: newQty }));
-        await handleAddToCart({ ...item, quantity: newQty });
+        await handleAddToCart({ ...item, quantity: 1 });
     };
 
     const handleDecrement = async (item: ItemType) => {
