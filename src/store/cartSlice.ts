@@ -74,6 +74,7 @@ const cartSlice = createSlice({
     items: [],
     loading: false,
     fetchCartLoading: false,
+    addToCartLoading: false,
     removeCartLoading: false,
   },
   reducers: {
@@ -97,26 +98,26 @@ const cartSlice = createSlice({
 
       // Add to Cart
       .addCase(addToCart.pending, (state) => {
-        state.fetchCartLoading = true;
+        state.addToCartLoading = true;
       })
       .addCase(addToCart.fulfilled, (state, action) => {
         // state.items = action.payload.items;
-        state.fetchCartLoading = false;
+        state.addToCartLoading = false;
       })
       .addCase(addToCart.rejected, (state) => {
-        state.fetchCartLoading = false;
+        state.addToCartLoading = false;
       })
 
       // Remove from  Cart items
       .addCase(removeFromCart.pending, (state) => {
-        state.loading = true;
+        state.removeCartLoading = true;
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
         console.log("removeFromCart fulfilled", action);
-        state.loading = false;
+        state.removeCartLoading = false;
       })
       .addCase(removeFromCart.rejected, (state) => {
-        state.loading = false;
+        state.removeCartLoading = false;
       });
 
     // remove from cart
@@ -126,6 +127,8 @@ const cartSlice = createSlice({
       })
       .addCase(removedFromCart.fulfilled, (state, action) => {
         state.items = action.payload.items;
+        console.log("removedFromCart fulfilled", action);
+        
         state.loading = false;
       })
       .addCase(removedFromCart.rejected, (state) => {

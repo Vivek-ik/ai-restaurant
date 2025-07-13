@@ -75,9 +75,15 @@ export default function Order({ onClose }: any) {
     };
 
     recognitionRef.current = recognition;
+
+    return () => {
+      window.speechSynthesis.cancel(); // stop any ongoing speech
+    };
   }, []);
 
   const handleMicClick = () => {
+    window.speechSynthesis.cancel();
+
     if (recognitionRef.current) {
       recognitionRef.current.start();
     }
@@ -244,6 +250,13 @@ export default function Order({ onClose }: any) {
           type="text"
           className="w-full flex-1 border px-2 py-1 rounded"
           value={input}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && input.trim() !== '') {
+
+              handleSend(input)
+              setInput("")
+            }
+          }}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Speak or type something..."
         />

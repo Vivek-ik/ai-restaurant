@@ -151,16 +151,20 @@ const Orders = () => {
   const { tableId } = useParams();
   const { categoryId, categoryName } = location.state || {};
   const { items } = useSelector((state: RootState) => state.cart);
-  const loading = useSelector((state: RootState) => state.cart.loading);
+  const cartsss = useSelector((state: RootState) => state.cart);
+  // const loading = useSelector((state: RootState) => state.cart.loading);
+  const addToCartLoading = useSelector((state: RootState) => state.cart.addToCartLoading);
+  const removeCartLoading = useSelector((state: RootState) => state.cart.removeCartLoading);
 
 
-  console.log("items", items);
+  console.log("cartsss", cartsss);
 
   const [menuItemsLocal, setMenuItemsLocal] = useState<any[]>([]);
   const [itemsToDisplay, setItemsToDisplay] = useState<any[]>([]);
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
   const [isRemovingItem, setIsRemovingItem] = useState(false);
+  const [localCartMap, setLocalCartMap] = useState<Record<string, number>>({}); // quantity map
 
   console.log("itemsToDisplay", itemsToDisplay);
 
@@ -182,6 +186,15 @@ const Orders = () => {
   }, [dispatch, tableId, isRemovingItem]);
 
   useEffect(() => {
+    setLocalCartMap(() =>
+      items.reduce((acc: Record<string, number>, ci: CartItem) => {
+        acc[ci.menuItem._id] = ci.quantity;
+        return acc;
+      }, {} as Record<string, number>)
+    );
+  }, [items]);
+
+  useEffect(() => {
     getMenu()
   }, [])
 
@@ -201,9 +214,26 @@ const Orders = () => {
     return items?.find((ci: CartItem) => ci.menuItem._id === itemId);
   };
 
+  const handleAddToCart = async (item: any, quantity: number) => {
+    setLoadingItemId(item._id);
+    try {
+      await dispatch(
+        addToCart({
+          tableId: tableId ?? "",
+          menuItemId: item._id,
+          quantity,
+        })
+      );
+      // dispatch(fetchCart(tableId ?? ""));
+    } catch (err) {
+      console.error("Add failed", err);
+    } finally {
+      setLoadingItemId(null);
+    }
+  };
+
   const handleRemoveFromCart = async (itemId: string) => {
     setLoadingItemId(itemId);
-
     try {
       await dispatch(
         removeFromCart({
@@ -211,31 +241,11 @@ const Orders = () => {
           menuItemId: itemId,
         })
       );
-      setIsRemovingItem(!isRemovingItem)
-      // await dispatch(fetchCart(tableId ?? "")); // Refresh cart
- 
+      // dispatch(fetchCart(tableId ?? ""));
     } catch (err) {
-      console.error("Failed to remove item:", err);
-    }
-  };
-
-  const handleAddToCart = async (itemId: string) => {
-    setLoadingItemId(itemId);
-
-    try {
-      await dispatch(
-        addToCart({
-          tableId: tableId ?? "",
-          menuItemId: itemId,
-          quantity: 1,
-          // customizations: ["No Onion"],
-        })
-      );
-
-      await dispatch(fetchCart(tableId ?? "")); // Refresh cart
-    } catch (err) {
-      console.error("Failed to add item:", err);
-
+      console.error("Remove failed", err);
+    } finally {
+      setLoadingItemId(null);
     }
   };
   return (
@@ -261,6 +271,9 @@ const Orders = () => {
         <div className=" p-4">
           {itemsToDisplay.map((item: any) => {
             const cartItem = getCartItem(item._id);
+            const quantity = localCartMap[item._id] || 0;
+            const isLoading = loadingItemId === item._id;
+            console.log("cartItemcartItem", cartItem);
 
             return (
               <div
@@ -298,9 +311,9 @@ const Orders = () => {
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2">
                   {item.available ? (
-                    cartItem ? (
+                    quantity > 0  ? (
                       <div className="flex w-full items-center justify-between bg-yellow-100 dark:bg-yellow-900/20 rounded-xl px-4 py-2">
-                        {loading && item?._id === loadingItemId ?
+                        {isLoading ?
                           <div className="flex items-center justify-center w-full h-full">
                             <Loader style={{ height: "32px" }} />
                           </div>
@@ -308,17 +321,26 @@ const Orders = () => {
                           <>
                             <button
                               onClick={() => {
+                                dispatch(removeItem(item));
                                 handleRemoveFromCart(item?._id)
+                                 setLocalCartMap((prev) => ({
+                                ...prev,
+                                [item._id]: Math.max((prev[item._id] || 1) - 1, 0),
+                              }));
                               }}
                               className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
                             >
                               -
                             </button>
-                            <span className="text-sm font-bold text-gray-800 dark:text-white">{cartItem?.quantity}</span>
+                            <span className="text-sm font-bold text-gray-800 dark:text-white">{quantity}</span>
                             <button
                               onClick={() => {
-                                // dispatch(addItem(item));
-                                handleAddToCart(item?._id)
+                                dispatch(addItem(item));
+                                handleAddToCart(item, 1)
+                                setLocalCartMap((prev) => ({
+                                  ...prev,
+                                  [item._id]: quantity + 1,
+                                }));
                               }}
                               className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
                             >
@@ -328,7 +350,7 @@ const Orders = () => {
                         }
                       </div>
                     ) : (
-                      loading && item?._id === loadingItemId ?
+                      addToCartLoading && item?._id === loadingItemId ?
                         <div className="flex items-center justify-center w-full h-full">
                           <Loader style={{ height: "32px" }} />
                         </div>
@@ -336,7 +358,8 @@ const Orders = () => {
                         <button
                           onClick={() => {
                             dispatch(addItem(item));
-                            handleAddToCart(item._id)
+                            handleAddToCart(item, 1)
+                            setLocalCartMap((prev) => ({ ...prev, [item._id]: 1 }));
                           }}
                           className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-md hover:from-yellow-600 hover:to-yellow-700 transition"
                         >

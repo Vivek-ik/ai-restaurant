@@ -7,13 +7,13 @@ import { AddToCartFlow } from '../components/addToCartFlow/AddToCartFlow';
 import { api } from '../api';
 
 export type Item = {
-    name: { en: string;[key: string]: string };
-    price: number;
-    quantity: number;
-    specialInstructions?: any;
-    [key: string]: any;
-  };
- 
+  name: { en: string;[key: string]: string };
+  price: number;
+  quantity: number;
+  specialInstructions?: any;
+  [key: string]: any;
+};
+
 
 const VoiceAssistantUI = () => {
 
@@ -215,7 +215,10 @@ const VoiceAssistantUI = () => {
 
         />
         <AiChatModal isOpen={showChat} onClose={() => setShowChat(false)}>
-          <Order onClose={() => setShowChat(false)} />
+          <Order onClose={() => {
+            setShowChat(false); window.speechSynthesis.cancel();
+          }}
+          />
         </AiChatModal>
         <div className="p-4 cursor-pointer" onClick={() => handleSend(liveTranscript)}>
           <FaSearch className="text-blue-600 text-2xl" />
@@ -225,12 +228,14 @@ const VoiceAssistantUI = () => {
       <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-3">
         <button className="bg-white text-blue-800 font-semibold py-4 rounded-xl shadow flex flex-col items-center justify-center hover:bg-blue-50 transition"
           onClick={() => navigate(`/categories/${tableId}`)}>
-          <FaTag className="text-2xl mb-1 text-blue-600" /> View Menu By Categories
+          <FaTag className="text-2xl mb-1 text-blue-600" />
+          View Menu By Categories
         </button>
 
-        <button className="bg-white text-blue-800 font-semibold py-4 rounded-xl shadow flex flex-col items-center justify-center hover:bg-blue-50 transition"
+        <button className="bg-white text-blue-800 font-semibold py-4 px-2 rounded-xl shadow flex flex-col items-center justify-center hover:bg-blue-50 transition"
           onClick={() => navigate(`/menu/${tableId}`)}>
-          <FaTags className="text-2xl mb-1 text-blue-600" /> View Menu By Items
+          <FaTags className="text-2xl mb-1 text-blue-600" />
+          View Menu By Items
         </button>
 
         <button className="bg-white text-blue-800 font-semibold py-4 rounded-xl shadow flex flex-col items-center justify-center hover:bg-blue-50 transition"
