@@ -7,7 +7,7 @@ const BackButton = ({ buttonText, bgTransparent=true }: {bgTransparent: boolean,
     // console.log("tableId", tableId);
 
     return (
-        <div className={bgTransparent ? "bg-transparent flex items-center space-x-2 p mb-4" : `bg-white flex items-center space-x-2 p-4`}>
+        <div className={bgTransparent ? "bg-transparent flex items-center space-x-2 mb-4" : `bg-white flex items-center space-x-2 p-4`}>
             <button
                 onClick={() => navigate(`/menu/${tableId}`)}
                 className={`${bgTransparent ? "bg-transparent" : "bg-white"} flex items-center text-sm text-primary hover:underline`}

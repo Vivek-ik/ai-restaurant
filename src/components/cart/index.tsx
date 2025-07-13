@@ -21,7 +21,7 @@ export default function Cart() {
 
   const { items } = useSelector((state: any) => state.cart);
   console.log("items", items);
-  
+
   const loading = useSelector((state: RootState) => state.cart.loading);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -87,26 +87,27 @@ export default function Cart() {
 
   const handleRemoveItemFromCart = async (tableId: string | undefined, itemId: string, decrement = false) => {
     if (decrement) {
+      setLoadingItemId(itemId);
       await dispatch(removedFromCart({ tableId: tableId ?? "", itemId }));
-      await dispatch(fetchCart(tableId ?? ""));
     } else {
-      setRemovingItemId(itemId);
       await dispatch(removedFromCart({ tableId: tableId ?? "", itemId }));
       setLoadingItemId(itemId)
       await dispatch(fetchCart(tableId ?? ""));
       setRemovingItemId(null);
-
     }
-
   };
+
   return (
     <div className="max-w-2xl mx-auto mb-[70px] p-2">
-      <BackButton buttonText="Back to Menu" bgTransparent={true} />
-      <h2 className="bg-transparent text-lg font-semibold text-gray-800 dark:text-white px-4 pb-0">Your Order</h2>
+      <div className="px-4">
+
+        <BackButton buttonText="Back to Menu" bgTransparent={true} />
+      </div>
+      <h2 className="bg-transparent text-lg font-semibold text-gray-800 dark:text-white px-2 pb-0">Your Order</h2>
       {items.length === 0 ? (
         <p className="bg-transparent max-w-2xl mx-auto mb-[70px] p-2 text-center mt-4 text-gray-500">No items in your order.</p>
       ) : (
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 p-2">
           {items.map((item: any) => {
             const id = item.menuItem._id;
             const quantity = localCartMap[id] ?? item.quantity;

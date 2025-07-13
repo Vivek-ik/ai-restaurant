@@ -1,13 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import { api } from "../api";
-
-interface AddToCartArgs {
-  tableId: string;
-  menuItemId: string;
-  quantity: number;
-  customizations?: any;
-}
 
 // Fetch Cart
 export const fetchCart = createAsyncThunk(
