@@ -13,6 +13,7 @@ const AppHeader: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMainAIPage = matchPath("/main-ai-page/:tableId", location.pathname);
+  const isQrPage = matchPath("/", location.pathname);
   console.log("AppHeader location", location.pathname);
 
   const handleToggle = () => {
@@ -103,7 +104,7 @@ const AppHeader: React.FC = () => {
             <h1 className="font-bold text-[24px]">Shreemaya</h1>
           </Link>
 
-          {!isMainAIPage && (
+          {!isMainAIPage && !isQrPage && (
 
             <button
               onClick={() => handleCustomize()}
