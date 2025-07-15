@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FaMicrophone, FaSearch, FaTag, FaShoppingCart, FaRestroom, FaEye, FaTags } from 'react-icons/fa';
 import AiChatModal from '../components/AiChatModal/AiChatModal';
 import Order from './CustomerOrder';
@@ -36,8 +36,26 @@ const VoiceAssistantUI = () => {
   console.log("aiReply", items);
 
   const toggleLanguage = () => {
+    window.speechSynthesis.cancel();
+
     setLanguage(prev => (prev === 'English' ? 'Hindi' : 'English'));
   };
+  
+
+  // inside VoiceAssistantUI
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      window.speechSynthesis.cancel();
+    };
+
+    // Cancel speech when the component unmounts or before page unload
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.speechSynthesis.cancel(); // on component unmount
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   const speakResponse = (reply: any) => {
     const utterance = new SpeechSynthesisUtterance(reply);
@@ -56,6 +74,7 @@ const VoiceAssistantUI = () => {
         message: text,
         lang: language === "English" ? "en" : "hi",
         tableId: tableId || "1",
+        messages
       });
 
       const data = res.data;
@@ -76,6 +95,8 @@ const VoiceAssistantUI = () => {
 
 
   const startListening = () => {
+    window.speechSynthesis.cancel();
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.lang = language === 'English' ? 'en-IN' : 'hi-IN';
@@ -183,7 +204,7 @@ const VoiceAssistantUI = () => {
               )}
             </div>
           )}
-          {intent === "menu_browsing" && (
+          {["menu_browsing", "filter_by_ingredients"].includes(intent ?? '') && (
             <div className="space-y-4">
               {Object.entries(groupedItems).map(([categoryName, items]) => (
                 <div key={categoryName}>
@@ -191,7 +212,10 @@ const VoiceAssistantUI = () => {
                   <ul className="list-disc list-inside text-gray-700">
                     {items.map((item, idx) => (
                       <li key={idx}>
-                        {item.itemName?.en} – ₹{item.price}
+                        {language === "hi"
+                          ? item.itemName?.hi || item.itemName?.en
+                          : item.itemName?.en}
+                        – ₹{item.price}
                       </li>
                     ))}
                   </ul>
@@ -248,7 +272,7 @@ const VoiceAssistantUI = () => {
         className="bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow hover:bg-blue-700 transition"
         onClick={toggleLanguage}
       >
-        {language === 'English' ? 'हिंदी' : 'English'}
+        {language === 'English' ? 'English' : 'हिंदी'}
       </button>
     </div>
   );

@@ -33,6 +33,7 @@ export default function Order({ onClose }: any) {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [updatedMessages, setUpdatedMessages] = useState<any>();
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
@@ -81,6 +82,21 @@ export default function Order({ onClose }: any) {
     };
   }, []);
 
+  // inside VoiceAssistantUI
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      window.speechSynthesis.cancel();
+    };
+
+    // Cancel speech when the component unmounts or before page unload
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.speechSynthesis.cancel(); // on component unmount
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   const handleMicClick = () => {
     window.speechSynthesis.cancel();
 
@@ -89,14 +105,16 @@ export default function Order({ onClose }: any) {
     }
   };
 
-  const sendAIMessage = async (message: string, lang: string) => {
+  const sendAIMessage = async (message: string, lang: string, history: any, lastAIItems: any) => {
     const res = await api.post("/api/ai-order", {
       tableId: tableId ?? "",
       message,
       lang,
+      previousMessages: messages,
+      suggestedItems: lastAIItems,
     });
     return {
-      reply: res.data.reply || "No reply received",
+      reply: res.data.reply || "No reply received please try again.",
       intent: res.data.intent,
       items: res.data.items || [],
       specialInstructions: res.data.specialInstructions || "",
@@ -108,11 +126,22 @@ export default function Order({ onClose }: any) {
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
 
+    const updatedMessages = [
+      ...messages,
+      { from: "user", text, intent: "", items: [] },
+    ];
+
     setMessages(prev => [...prev, { from: "user", text, intent: "", items: [] }]);
     setLoading(true);
 
+    const lastAIItems = updatedMessages
+      .slice()
+      .reverse()
+      .find((msg) => msg.from === "ai" && msg.items && msg.items.length > 0)?.items || [];
+
+
     try {
-      const data = await sendAIMessage(text, language);
+      const data = await sendAIMessage(text, language, updatedMessages, lastAIItems);
       setMessages((prev) => [
         ...prev,
         {
@@ -124,12 +153,11 @@ export default function Order({ onClose }: any) {
       ]);
       setItemsByCategory(data.itemsByCategory || {});
       setIntent(data.intent);
-
       speakResponse(data.reply);
       setItems(data.items || []);
     } catch (err) {
       console.error("AI Error:", err);
-      setMessages(prev => [...prev, { from: "ai", text: "❌ AI failed to respond.", intent: "", items: [] }]);
+      setMessages(prev => [...prev, { from: "ai", text: "❌ AI failed to respond. Try to ask anything else, e.g. order panner butter masala", intent: "", items: [] }]);
     } finally {
       setLoading(false);
     }
@@ -190,12 +218,6 @@ export default function Order({ onClose }: any) {
           <div key={idx} className={`mb-1 flex flex-col ${msg.from === "user" ? "text-right" : "text-left"}`}>
             <span className={msg.from === "user" ? "text-blue-600" : "text-green-600"}>
               {msg.text}
-              {/* {msg.items.map((item, i) => (
-                <div key={i}>
-                  <div>{item?.itemName?.en}</div>
-                  <span>{item.specialInstructions}</span>
-                </div>
-              ))} */}
             </span>
 
             {/* {msg.intent === "menu_browsing" && msg.category && (
@@ -213,7 +235,7 @@ export default function Order({ onClose }: any) {
               </div>
             )} */}
 
-            {msg.intent === "menu_browsing" && msg.items.length > 0 && (() => {
+            {["menu_browsing", "filter_by_ingredients"].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
               msg.items.forEach((item) => {
                 const cat = item.category?.name || "Uncategorized";
@@ -268,7 +290,10 @@ export default function Order({ onClose }: any) {
           🎤
         </button>
         <button
-          onClick={() => handleSend(input)}
+          onClick={() => {
+            handleSend(input)
+            setInput("")
+          }}
           disabled={loading}
           className="bg-black text-white px-3 py-1 rounded hover:bg-gray-800"
         >

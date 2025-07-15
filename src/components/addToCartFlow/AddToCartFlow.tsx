@@ -112,7 +112,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
                         <p className="text-sm text-gray-600">₹{item.price}</p>
                     </div>
 
-                    {addedItems[item.id] ? (
+                    {addedItems[item.id]  ? (
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => handleDecrement(item)}
