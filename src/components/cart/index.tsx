@@ -98,16 +98,16 @@ export default function Cart() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mb-[70px] p-2">
-      <div className="px-4">
+    <div className="max-w-2xl mx-auto mb-[70px] px-4">
+      <div className=" pt-4">
 
         <BackButton buttonText="Back to Menu" bgTransparent={true} />
       </div>
-      <h2 className="bg-transparent text-lg font-semibold text-gray-800 dark:text-white px-2 pb-0">Your Order</h2>
+      <h2 className="bg-transparent text-lg font-semibold text-gray-800 dark:text-white pb-4">Your Order</h2>
       {items.length === 0 ? (
         <p className="bg-transparent max-w-2xl mx-auto mb-[70px] p-2 text-center mt-4 text-gray-500">No items in your order.</p>
       ) : (
-        <div className="space-y-4 p-2">
+        <div className="space-y-4">
           {items.map((item: any) => {
             const id = item.menuItem._id;
             const quantity = localCartMap[id] ?? item.quantity;

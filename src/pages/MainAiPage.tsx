@@ -20,7 +20,7 @@ const VoiceAssistantUI = () => {
   const navigate = useNavigate();
   const { tableId } = useParams();
   // const [tableId, setTableId] = useState('1'); // Default table ID
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguage] = useState('Hindi');
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   type Message = { from: 'user' | 'ai'; text: string };
@@ -40,7 +40,7 @@ const VoiceAssistantUI = () => {
 
     setLanguage(prev => (prev === 'English' ? 'Hindi' : 'English'));
   };
-  
+
 
   // inside VoiceAssistantUI
   useEffect(() => {
@@ -57,11 +57,30 @@ const VoiceAssistantUI = () => {
     };
   }, []);
 
-  const speakResponse = (reply: any) => {
-    const utterance = new SpeechSynthesisUtterance(reply);
-    utterance.lang = language === 'English' ? 'en-IN' : 'hi-IN';
-    window.speechSynthesis.speak(utterance);
+  useEffect(() => {
+    window.speechSynthesis.getVoices();
+  }, []);   
+
+  const speakResponse = (reply: string) => {
+    const speak = () => {
+      const utterance = new SpeechSynthesisUtterance(reply);
+      utterance.lang = language === 'English' ? 'en-IN' : 'hi-IN';
+
+      const voices = window.speechSynthesis.getVoices();
+      const selectedVoice = voices.find(v => v.lang === utterance.lang);
+      if (selectedVoice) utterance.voice = selectedVoice;
+
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = speak;
+    } else {
+      speak();
+    }
   };
+
 
   const handleSend = async (text: string) => {
     if (!text.trim()) return;

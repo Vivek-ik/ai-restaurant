@@ -89,7 +89,7 @@ export default function MenuByCategory() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-10 pt-5 px-6">
+        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white py-10 pt-4 px-4">
             <BackButton buttonText="Back to Menu"
                 bgTransparent={true}
             />
