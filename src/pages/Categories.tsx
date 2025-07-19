@@ -100,7 +100,7 @@ export default function MenuByCategory() {
             {isLoading ? (
                 <div className="flex justify-center items-center mt-10">
                     <Loader className="animate-spin h-8 w-8 text-yellow-500" />
-                    <span className="ml-3 text-orange-500 font-medium">Loading categories...</span>
+                    <span className="ml-3 text-yellow-600 font-medium text-lg">Loading categories...</span>
                 </div>
             ) : (
                 <>
