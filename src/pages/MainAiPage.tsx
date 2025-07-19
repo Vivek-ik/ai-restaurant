@@ -160,7 +160,7 @@ const VoiceAssistantUI = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-start font-sans p-4">
-      <h1 className="text-3xl font-extrabold text-blue-900 mb-2 tracking-wider">Shreemaya</h1>
+      <h1 className="text-3xl font-extrabold text-blue-900 mb-2 tracking-wider">Bob's Cafe</h1>
 
       <div className="bg-blue-600 rounded-full p-8 shadow-lg mb-2 cursor-pointer" onClick={startListening}>
         <FaMicrophone className="text-white text-xl" />
@@ -258,7 +258,7 @@ const VoiceAssistantUI = () => {
 
         />
         <AiChatModal isOpen={showChat} onClose={() => setShowChat(false)}>
-          <Order onClose={() => {
+          <Order isOpen={showChat} onClose={() => {
             setShowChat(false); window.speechSynthesis.cancel();
           }}
           />

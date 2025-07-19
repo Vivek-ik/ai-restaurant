@@ -101,7 +101,7 @@ const AppHeader: React.FC = () => {
               src="./images/logo/logo-dark.svg"
               alt="Logo"
             /> */}
-            <h1 className="font-bold text-[24px]">Shreemaya</h1>
+            <h1 className="font-bold text-[24px]">Bob's Cafe</h1>
           </Link>
 
           {!isMainAIPage && !isQrPage && (

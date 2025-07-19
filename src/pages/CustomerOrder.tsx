@@ -15,7 +15,14 @@ type Message = {
   category?: Record<string, any>;
 };
 
-export default function Order({ onClose }: any) {
+interface OrderProps {
+  onClose: () => void;
+  isOpen: boolean;
+}
+
+export default function Order({ onClose, isOpen }: OrderProps) {
+  const inputRef = useRef<HTMLInputElement>(null); // ⬅️ create ref
+
   const dispatch = useDispatch();
   const { tableId } = useParams();
   const [language, setLanguage] = useState("en");
@@ -35,6 +42,15 @@ export default function Order({ onClose }: any) {
   const [listening, setListening] = useState(false);
   const [updatedMessages, setUpdatedMessages] = useState<any>();
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Wait a short time to ensure modal animation/rendering finishes
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) {
@@ -220,21 +236,6 @@ export default function Order({ onClose }: any) {
               {msg.text}
             </span>
 
-            {/* {msg.intent === "menu_browsing" && msg.category && (
-              <div className="space-y-4">
-                {Object.entries(msg.category).map(([cat, items]) => (
-                  <div key={cat}>
-                    <h3 className="text-xl font-bold text-blue-800">{cat}</h3>
-                    <ul className="list-disc list-inside text-gray-700">
-                      {(items as any[]).map((item, i) => (
-                        <li key={i}>{item.name} – ₹{item.price}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )} */}
-
             {["menu_browsing", "filter_by_ingredients"].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
               msg.items.forEach((item) => {
@@ -269,6 +270,7 @@ export default function Order({ onClose }: any) {
 
       <div className="flex gap-2 items-center">
         <input
+          ref={inputRef} // ⬅️ attach ref
           type="text"
           className="w-full flex-1 border px-2 py-1 rounded"
           value={input}
