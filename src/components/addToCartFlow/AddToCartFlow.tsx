@@ -55,7 +55,22 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
         console.log("newQty", newQty);
 
         setQuantities((prev) => ({ ...prev, [item.id]: newQty }));
-        await handleAddToCart({ ...item, quantity: 1 });
+
+        try {
+            await dispatch(
+                addToCart({
+                    tableId,
+                    menuItemId: item.id,
+                    quantity: 1,
+                    customizations: item.specialInstructions ? [item.specialInstructions] : [],
+                })
+            );
+            setAddedItems((prev) => ({ ...prev, [item.id]: true }));
+        } catch (err) {
+            console.error("Add to cart error:", err);
+        } finally {
+            setLoadingItemId(null);
+        }
     };
 
     const handleDecrement = async (item: ItemType) => {
@@ -112,7 +127,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
                         <p className="text-sm text-gray-600">₹{item.price}</p>
                     </div>
 
-                    {addedItems[item.id]  ? (
+                    {addedItems[item.id] ? (
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => handleDecrement(item)}

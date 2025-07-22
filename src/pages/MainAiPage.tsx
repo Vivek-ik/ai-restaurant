@@ -19,7 +19,7 @@ const VoiceAssistantUI = () => {
 
   const navigate = useNavigate();
   const { tableId } = useParams();
-  // const [tableId, setTableId] = useState('1'); // Default table ID
+  const recognitionRef = React.useRef<InstanceType<typeof window.SpeechRecognition> | InstanceType<typeof window.webkitSpeechRecognition> | null>(null);
   const [language, setLanguage] = useState('Hindi');
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -27,22 +27,64 @@ const VoiceAssistantUI = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [aiReply, setAiReply] = useState<string[]>([]);
   const [showChat, setShowChat] = useState(false);
-  const [itemsByCategory, setItemsByCategory] = useState();
 
   const [items, setItems] = useState<Item[]>([]);
   const [intent, setIntent] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log("aiReply", items);
-
   const toggleLanguage = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     window.speechSynthesis.cancel();
 
     setLanguage(prev => (prev === 'English' ? 'Hindi' : 'English'));
   };
 
+    useEffect(() => {
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported");
+      return;
+    }
+    // setVoices(window.speechSynthesis.getVoices());
 
-  // inside VoiceAssistantUI
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = language === "hi" ? "hi-IN" : "en-IN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    // recognition.onstart = () => setListening(true);
+    // recognition.onend = () => setListening(false);
+
+    recognition.onerror = (e: any) => console.error("Speech recognition error", e);
+
+    recognition.onresult = (event: any) => {
+      let final = "";
+      let interim = "";
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+
+      if (final) {
+        handleSend(final);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      window.speechSynthesis.cancel(); // stop any ongoing speech
+    };
+  }, [language]); // 👈 important to re-run when language changes
+
+
   useEffect(() => {
     const handleBeforeUnload = () => {
       window.speechSynthesis.cancel();
@@ -59,7 +101,7 @@ const VoiceAssistantUI = () => {
 
   useEffect(() => {
     window.speechSynthesis.getVoices();
-  }, []);   
+  }, []);
 
   const speakResponse = (reply: string) => {
     const speak = () => {
@@ -99,7 +141,6 @@ const VoiceAssistantUI = () => {
       const data = res.data;
 
       setMessages(prev => [...prev, { from: 'ai', text: data.reply }]);
-      setItemsByCategory(data.itemsByCategory || {});
       setIntent(data.intent);
       setAiReply(data.reply.split('\n').filter((line: string) => line.trim() !== ''));
       setItems(data.items || []);
@@ -121,6 +162,8 @@ const VoiceAssistantUI = () => {
     recognition.lang = language === 'English' ? 'en-IN' : 'hi-IN';
     recognition.interimResults = true;
     recognition.continuous = false;
+
+    recognitionRef.current = recognition; // ✅ Save instance in ref
 
     // ✅ Only clear AI replies and items here — NOT liveTranscript
     setAiReply([]);
@@ -253,7 +296,6 @@ const VoiceAssistantUI = () => {
           placeholder="Or type your question here..."
           className="flex-grow p-4 text-gray-700 rounded-l-xl outline-none"
           onKeyDown={(e) => e.key === 'Enter' && handleSend((e.target as HTMLInputElement).value)}
-
           onFocus={() => setShowChat(true)}
 
         />

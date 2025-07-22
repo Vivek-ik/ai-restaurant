@@ -6,6 +6,7 @@ import { AddToCartFlow } from "../components/addToCartFlow/AddToCartFlow";
 import { useParams } from "react-router";
 import { api } from "../api";
 import { Item } from "./MainAiPage";
+import { log } from "console";
 
 type Message = {
   from: string;
@@ -23,25 +24,57 @@ interface OrderProps {
 export default function Order({ onClose, isOpen }: OrderProps) {
   const inputRef = useRef<HTMLInputElement>(null); // ⬅️ create ref
 
-  const dispatch = useDispatch();
   const { tableId } = useParams();
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("hi");
+  console.log("language", language);
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
-      from: "ai", text: `👋 Namaste! Welcome to Shrimaya. How can I help you today?
+      from: "ai", text: `👋 Namaste! Welcome to Bob's cafe. How can I help you today?
        Please select your language: हिंदी या English?`,
       intent: "", items: []
     }
   ]);
-  const [itemsByCategory, setItemsByCategory] = useState();
-  const [intent, setIntent] = useState();
 
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
-  const [updatedMessages, setUpdatedMessages] = useState<any>();
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const recognitionRef = useRef<any>(null);
+
+
+  // Load voices once
+  useEffect(() => {
+    const loadVoices = () => {
+      const allVoices = window.speechSynthesis.getVoices();
+
+      if (allVoices.length > 0) {
+        console.log("✅ Voices loaded:", allVoices);
+
+        // Optional: filter for Hindi voices only
+        const hindiVoices = allVoices.filter((v) => v.lang === "hi-IN");
+        setVoices(allVoices); // set full voices, or `hindiVoices` if only Hindi is needed
+      } else {
+        console.log("🕓 Voices not ready yet, waiting...");
+      }
+    };
+
+    // First attempt to load
+    loadVoices();
+
+    // Attach listener for when voices become available
+    window.speechSynthesis.onvoiceschanged = () => {
+      const updatedVoices = window.speechSynthesis.getVoices();
+      console.log("🔄 Voices loaded later:", updatedVoices);
+      setVoices(updatedVoices);
+    };
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -57,9 +90,10 @@ export default function Order({ onClose, isOpen }: OrderProps) {
       alert("Speech recognition not supported");
       return;
     }
+    setVoices(window.speechSynthesis.getVoices());
 
     const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = "en-IN";
+    recognition.lang = language === "hi" ? "hi-IN" : "en-IN";
     recognition.interimResults = true;
     recognition.continuous = false;
 
@@ -81,7 +115,7 @@ export default function Order({ onClose, isOpen }: OrderProps) {
         }
       }
 
-      // Live transcription in input
+      // Live transcription
       setInput(final || interim);
 
       // Final recognized => send
@@ -96,7 +130,7 @@ export default function Order({ onClose, isOpen }: OrderProps) {
     return () => {
       window.speechSynthesis.cancel(); // stop any ongoing speech
     };
-  }, []);
+  }, [language]); // 👈 important to re-run when language changes
 
   // inside VoiceAssistantUI
   useEffect(() => {
@@ -130,7 +164,7 @@ export default function Order({ onClose, isOpen }: OrderProps) {
       suggestedItems: lastAIItems,
     });
     return {
-      reply: res.data.reply || "No reply received please try again.",
+      reply: res.data.reply || "Didn't understand the qurey, please try again.",
       intent: res.data.intent,
       items: res.data.items || [],
       specialInstructions: res.data.specialInstructions || "",
@@ -167,8 +201,6 @@ export default function Order({ onClose, isOpen }: OrderProps) {
           items: Array.isArray(data.items) ? data.items : [],
         },
       ]);
-      setItemsByCategory(data.itemsByCategory || {});
-      setIntent(data.intent);
       speakResponse(data.reply);
       setItems(data.items || []);
     } catch (err) {
@@ -179,34 +211,81 @@ export default function Order({ onClose, isOpen }: OrderProps) {
     }
   };
 
-  const speakResponse = (reply: string) => {
-    try {
-      const utterance = new SpeechSynthesisUtterance(reply);
-      const voices = window.speechSynthesis.getVoices();
 
-      const selectedVoice = voices.find(
-        (v) =>
-          v.name.includes("Google UK") ||
-          v.name.includes("Heera") ||
-          v.lang === "hi-IN" ||
-          v.lang === "en-IN"
-      );
+const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
+  return new Promise((resolve) => {
+    let voices = speechSynthesis.getVoices();
+    if (voices.length > 0) return resolve(voices);
 
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-        utterance.lang = selectedVoice.lang;
+    const interval = setInterval(() => {
+      voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        clearInterval(interval);
+        resolve(voices);
       }
+    }, 100);
 
-      utterance.volume = 1;
-      utterance.pitch = 1;
-      utterance.rate = 1;
+    setTimeout(() => {
+      clearInterval(interval);
+      resolve([]); // fail-safe after 3s
+    }, 2000);
+  });
+};
 
-      window.speechSynthesis.cancel(); // Stop any current speech
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.error("Speech error:", err);
+
+
+const speakResponse = async (reply: string) => {
+  try {
+    const voices = await waitForVoices();
+
+    const utterance = new SpeechSynthesisUtterance(reply);
+    utterance.volume = 1;
+    utterance.pitch = 1;
+    utterance.rate = 1;
+
+    const hindiVoice =
+      voices.find((v) => v.lang === "hi-IN" && v.name.includes("Google")) ||
+      voices.find((v) => v.lang === "hi-IN");
+
+    const englishVoice =
+      voices.find((v) => v.lang === "en-IN") ||
+      voices.find((v) => v.lang.startsWith("en"));
+
+    const selectedVoice = language === "hi" ? hindiVoice : englishVoice;
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang;
+    } else {
+      console.warn("⚠️ No suitable voice found for", language);
     }
-  };
+
+    // Optional: Log start/end
+    utterance.onstart = () => {
+      console.log("🟢 Speech started:", utterance.text);
+    };
+    utterance.onend = () => {
+      console.log("✅ Speech finished");
+    };
+    utterance.onerror = (e) => {
+      console.error("🔴 Speech error", e.error, utterance.text);
+    };
+
+    // ✅ Cancel any ongoing speech *first*
+    if (speechSynthesis.speaking || speechSynthesis.pending) {
+      console.log("⛔ Cancelling previous speech");
+      speechSynthesis.cancel();
+      await new Promise((res) => setTimeout(res, 200)); // ensure clean cancel
+    }
+
+    // 🔊 Speak latest message (always)
+    speechSynthesis.speak(utterance);
+    console.log("🎤 Speaking:", utterance.text);
+  } catch (err) {
+    console.error("❌ speakResponse error:", err);
+  }
+};
+
 
 
   // group items by category name
@@ -235,6 +314,30 @@ export default function Order({ onClose, isOpen }: OrderProps) {
             <span className={msg.from === "user" ? "text-blue-600" : "text-green-600"}>
               {msg.text}
             </span>
+
+            {/* ✅ Show language buttons only once, at the first AI message */}
+            {msg.from === "ai" && idx === 0 && (
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setLanguage("en")}
+                  className={`px-3 py-1 rounded border-2 transition-all duration-200 ${language === "en"
+                    ? "bg-blue-600 border-blue-600 text-white font-semibold"
+                    : "bg-white border-gray-300 text-gray-800 hover:bg-blue-100"
+                    }`}
+                >
+                  English {language === "en" && "✅"}
+                </button>
+                <button
+                  onClick={() => setLanguage("hi")}
+                  className={`px-3 py-1 rounded border-2 transition-all duration-200 ${language === "hi"
+                    ? "bg-green-600 border-green-600 text-white font-semibold"
+                    : "bg-white border-gray-300 text-gray-800 hover:bg-green-100"
+                    }`}
+                >
+                  हिंदी {language === "hi" && "✅"}
+                </button>
+              </div>
+            )}
 
             {["menu_browsing", "filter_by_ingredients"].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
