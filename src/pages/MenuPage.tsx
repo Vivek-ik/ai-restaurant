@@ -269,12 +269,11 @@ const Orders = () => {
         </div>
       ) : (
         <div className=" p-4">
-          {itemsToDisplay.map((item: any) => {
+          {itemsToDisplay?.length > 0 ? itemsToDisplay.map((item: any) => {
             const cartItem = getCartItem(item._id);
             const quantity = localCartMap[item._id] || 0;
             const isLoading = loadingItemId === item._id;
             console.log("cartItemcartItem", cartItem);
-
             return (
               <div
                 key={item._id}
@@ -311,7 +310,7 @@ const Orders = () => {
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2">
                   {item.available ? (
-                    quantity > 0  ? (
+                    quantity > 0 ? (
                       <div className="flex w-full items-center justify-between bg-yellow-100 dark:bg-yellow-900/20 rounded-xl px-4 py-2">
                         {isLoading ?
                           <div className="flex items-center justify-center w-full h-full">
@@ -323,10 +322,10 @@ const Orders = () => {
                               onClick={() => {
                                 dispatch(removeItem(item));
                                 handleRemoveFromCart(item?._id)
-                                 setLocalCartMap((prev) => ({
-                                ...prev,
-                                [item._id]: Math.max((prev[item._id] || 1) - 1, 0),
-                              }));
+                                setLocalCartMap((prev) => ({
+                                  ...prev,
+                                  [item._id]: Math.max((prev[item._id] || 1) - 1, 0),
+                                }));
                               }}
                               className="px-3 py-1 bg-yellow-300 dark:bg-yellow-700 text-black dark:text-white rounded-full hover:bg-yellow-400 dark:hover:bg-yellow-600 transition"
                             >
@@ -376,8 +375,12 @@ const Orders = () => {
                   )}
                 </div>
               </div>
-            );
-          })}
+            )
+          }) :
+            <div className="flex items-center justify-center h-64">
+              No Data Found
+            </div>
+          }
         </div>
       )}
 
