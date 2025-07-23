@@ -244,9 +244,9 @@ const VoiceAssistantUI = () => {
                         <span className="text-sm text-blue-700">₹{item.price}</span>
                       </div>
                       <p className="text-sm text-blue-800">Quantity: {item.quantity}</p>
-                      {/* {item.specialInstructions && (
+                      {item.specialInstructions && (
                         <p className="text-sm text-orange-600 italic">📝 {item.specialInstructions}</p>
-                      )} */}
+                      )}
                     </div>
                   ))}
                   <div className="mt-2">
