@@ -339,7 +339,7 @@ const speakResponse = async (reply: string) => {
               </div>
             )}
 
-            {["menu_browsing", "filter_by_ingredients"].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
+            {["menu_browsing", "filter_by_ingredients", "filter_by_jain"].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
               msg.items.forEach((item) => {
                 const cat = item.category?.name || "Uncategorized";
