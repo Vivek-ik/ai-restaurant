@@ -42,7 +42,7 @@ const VoiceAssistantUI = () => {
     setLanguage(prev => (prev === 'English' ? 'Hindi' : 'English'));
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) {
       alert("Speech recognition not supported");
       return;
@@ -213,6 +213,7 @@ const VoiceAssistantUI = () => {
       <div className="bg-blue-100 border border-blue-300 px-6 py-2 rounded-xl text-center mb-3 shadow">
         <p className="font-semibold text-xl text-blue-900">Press and Ask</p>
         <p className="text-sm text-blue-700">Aaj menu me kya h?</p>
+        <p className="text-sm text-blue-700">Teen masala dosa order krdo</p>
       </div>
 
       {(isListening || aiReply.length > 0 || isLoading) && (
