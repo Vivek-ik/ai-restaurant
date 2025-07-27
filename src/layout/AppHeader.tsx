@@ -108,7 +108,7 @@ const AppHeader: React.FC = () => {
 
             <button
               onClick={() => handleCustomize()}
-              className={`w-20 rounded-lg px-3 py-2 text-sm font-medium border text-primary border-primary hover:bg-primary/10 text-gray-400 border-gray-300 cursor-not-allowed transition-all`}
+              className={`w-20 rounded-lg px-3 py-2 text-sm font-medium border text-primary border-primary hover:bg-primary/10 text-gray-400 border-gray-300 transition-all`}
             >
               Ask AI
             </button>
