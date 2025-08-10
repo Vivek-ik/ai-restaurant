@@ -277,7 +277,7 @@ const Orders = () => {
             return (
               <div
                 key={item._id}
-                className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 p-4 group h-[333px] mb-4"
+                className="relative overflow-hidden rounded-3xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 backdrop-blur shadow-lg hover:shadow-xl transition-all duration-300 p-4 group h-[320px] mb-4"
               >
                 {/* Item Image */}
                 <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-4">
@@ -296,7 +296,7 @@ const Orders = () => {
 
                 {/* <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{item.category}</p> */}
 
-                <div className="flex gap-2 flex-wrap mb-3">
+                {/* <div className="flex gap-2 flex-wrap mb-3">
                   {item.tags.map((tag: any, idx: any) => (
                     <span
                       key={idx}
@@ -305,7 +305,7 @@ const Orders = () => {
                       {tag}
                     </span>
                   ))}
-                </div>
+                </div> */}
 
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2">
@@ -368,7 +368,7 @@ const Orders = () => {
                   ) : (
                     <button
                       disabled
-                      className="w-full rounded-xl px-4 py-2 text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed"
+                      className="w-full rounded-xl px-4 py-2 h-[44px] text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed"
                     >
                       Unavailable
                     </button>

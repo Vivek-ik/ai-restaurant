@@ -15,6 +15,8 @@ type ItemType = {
 };
 
 export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: string }) {
+    console.log("items in AddToCartFlow", tableId);
+    
     const [quantities, setQuantities] = useState(() =>
         items.reduce((acc, item) => {
             acc[item.id] = item.quantity ?? 1;
@@ -107,7 +109,7 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
 
             console.log("Order placed:", res.data);
             dispatch(clearCart());
-            navigate(`/order-placed/:${tableId}`, { replace: true });
+            navigate(`/order-placed/${tableId}`, { replace: true });
 
         } catch (error: any) {
             console.error("Order failed:", error.response?.data || error.message);
@@ -117,63 +119,79 @@ export function AddToCartFlow({ items, tableId }: { items: ItemType[]; tableId: 
     return (
         <div className="space-y-2 mt-2">
             {items.map((item) => (
-                <div
-                    key={item.id}
-                    className="flex justify-between items-center border p-2 rounded-md shadow-sm"
-                >
-                    <div>
-                        <p className="font-semibold">{item.name.en}</p>
-                        <p className="text-sm text-gray-600">{item.specialInstructions}</p>
-                        <p className="text-sm text-gray-600">₹{item.price}</p>
-                    </div>
-
-                    {addedItems[item.id] ? (
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => handleDecrement(item)}
-                                className="w-6 h-6 bg-yellow-200 text-black rounded-full font-bold"
-                                disabled={loadingItemId === item.id}
-                            >
-                                –
-                            </button>
-                            <span className="w-6 text-center font-medium">
-                                {loadingItemId === item.id ? "..." : quantities[item.id]}
-                            </span>
-                            <button
-                                onClick={() => handleIncrement(item)}
-                                className="w-6 h-6 bg-yellow-200 text-black rounded-full font-bold"
-                                disabled={loadingItemId === item.id}
-                            >
-                                +
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={() => handleAddToCart(item)}
-                            disabled={loadingItemId === item.id}
-                            className="bg-green-600 text-white px-3 py-1 rounded text-sm"
-                        >
-                            {loadingItemId === item.id ? "Adding..." : "Add to Cart"}
-                        </button>
-                    )}
+            <div
+                key={item.id}
+                className="flex justify-between items-center border p-2 rounded-md shadow-sm"
+            >
+                <div>
+                <p className="font-semibold">{item.name.en}</p>
+                <p className="text-sm text-gray-600">{item.specialInstructions}</p>
+                <p className="text-sm text-gray-600">₹{item.price}</p>
                 </div>
+
+                {addedItems[item.id] ? (
+                <div className="flex items-center gap-2">
+                    <button
+                    onClick={() => handleDecrement(item)}
+                    className={`w-6 h-6 bg-yellow-200 text-black rounded-full font-bold ${
+                        loadingItemId === item.id ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={loadingItemId === item.id}
+                    >
+                    –
+                    </button>
+                    <span className="w-6 text-center font-medium">
+                    {loadingItemId === item.id ? "..." : quantities[item.id]}
+                    </span>
+                    <button
+                    onClick={() => handleIncrement(item)}
+                    className={`w-6 h-6 bg-yellow-200 text-black rounded-full font-bold ${
+                        loadingItemId === item.id ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={loadingItemId === item.id}
+                    >
+                    +
+                    </button>
+                </div>
+                ) : (
+                <button
+                    onClick={() => handleAddToCart(item)}
+                    disabled={loadingItemId === item.id}
+                    className={`bg-green-600 text-white px-3 py-1 rounded text-sm ${
+                    loadingItemId === item.id ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                >
+                    {loadingItemId === item.id ? "Adding..." : "Add to Cart"}
+                </button>
+                )}
+            </div>
             ))}
 
             {Object.keys(addedItems).length > 0 && (
-                <div className="flex justify-between gap-3 pt-2">
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded w-full"
-                        onClick={() => navigate(`/cart/${tableId}`)}
-                    >
-                        View Cart
-                    </button>
-                    <button
-                        className="bg-orange-500 text-white px-4 py-2 rounded w-full"
-                        onClick={handleSubmitOrder}
-                    >
-                        Place Order
-                    </button>
-                </div>
+            <div className="flex justify-between gap-3 pt-2">
+                <button
+                disabled={Object.values(quantities).every(qty => qty === 0)}
+                className={`bg-blue-600 text-white px-4 py-2 rounded w-full ${
+                    Object.values(quantities).every(qty => qty === 0)
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                onClick={() => navigate(`/cart/${tableId}`)}
+                >
+                View Cart
+                </button>
+                <button
+                disabled={Object.values(quantities).every(qty => qty === 0)}
+                className={`bg-orange-500 text-white px-4 py-2 rounded w-full ${
+                    Object.values(quantities).every(qty => qty === 0)
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                onClick={handleSubmitOrder}
+                >
+                Place Order
+                </button>
+            </div>
             )}
 
         </div>

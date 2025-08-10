@@ -23,6 +23,8 @@ const VoiceAssistantUI = () => {
   const [language, setLanguage] = useState('Hindi');
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
+  console.log("liveTranscript", liveTranscript);
+
   type Message = { from: 'user' | 'ai'; text: string };
   const [messages, setMessages] = useState<Message[]>([]);
   const [aiReply, setAiReply] = useState<string[]>([]);
@@ -148,13 +150,14 @@ const VoiceAssistantUI = () => {
     } catch (err) {
       console.error("AI error", err);
     } finally {
-      setLiveTranscript("");
+      // setLiveTranscript("");
       setIsLoading(false);
     }
   };
 
 
   const startListening = () => {
+    setLiveTranscript("")
     window.speechSynthesis.cancel();
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -218,11 +221,12 @@ const VoiceAssistantUI = () => {
 
       {(isListening || aiReply.length > 0 || isLoading) && (
         <div className="bg-white p-4 text-gray-700 rounded-md mb-3 w-full max-w-md">
-          {isListening && (
-            <div className="flex items-center justify-center -*p-3 rounded-xl text-gray-800 text-lg">
-              🎙️ {liveTranscript || 'Listening...'}
-            </div>
-          )}
+          {/* {isListening && ( */}
+          <div className="flex items-center justify-left p-[5px] pl-[7px] pb-0 rounded-xl text-lg">
+            {liveTranscript}
+            {liveTranscript !== "" ? "" : '🎙️ Listening...'}
+          </div>
+          {/* )} */}
 
           {isLoading && !isListening && (
             <div className="flex items-center justify-center gap-2 text-blue-600 text-sm italic">
@@ -318,7 +322,7 @@ const VoiceAssistantUI = () => {
           View Menu By Categories
         </button>
 
-        <button className="bg-white text-blue-800 font-semibold py-4 px-2 rounded-xl shadow flex flex-col items-center justify-center hover:bg-blue-50 transition"
+        <button className="bg-white text-blue-800 font-semibold py-4 px-3 rounded-xl shadow flex flex-col items-center justify-center hover:bg-blue-50 transition"
           onClick={() => navigate(`/menu/${tableId}`)}>
           <FaTags className="text-2xl mb-1 text-blue-600" />
           View Menu By Items

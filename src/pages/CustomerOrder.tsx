@@ -339,7 +339,7 @@ const speakResponse = async (reply: string) => {
               </div>
             )}
 
-            {["menu_browsing", "filter_by_jain"].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
+            {["menu_browsing", ""].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
               msg.items.forEach((item) => {
                 const cat = item.category?.name || "Uncategorized";
@@ -387,13 +387,13 @@ const speakResponse = async (reply: string) => {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Speak or type something..."
         />
-        <button
+        {/* <button
           onClick={handleMicClick}
           className={`px-3 py-1 rounded ${listening ? "bg-red-600" : "bg-gray-300"} text-white`}
           title="Speak"
         >
           🎤
-        </button>
+        </button> */}
         <button
           onClick={() => {
             handleSend(input)
