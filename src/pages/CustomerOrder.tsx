@@ -162,9 +162,14 @@ export default function Order({ onClose, isOpen }: OrderProps) {
       lang,
       previousMessages: messages,
       suggestedItems: lastAIItems,
-    });
+    },
+      { timeout: 20000 }
+    );
+    console.log("AI response:", res);
+
     return {
-      reply: res.data.reply || "Didn't understand the qurey, please try again.",
+      // reply: res.data.reply || "Didn't understand the qurey, please try again.",
+      reply: res.data.reply || "Didn't understand the qurey. Please select a menu item or ask for help.",
       intent: res.data.intent,
       items: res.data.items || [],
       specialInstructions: res.data.specialInstructions || "",
@@ -212,94 +217,80 @@ export default function Order({ onClose, isOpen }: OrderProps) {
   };
 
 
-const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
-  return new Promise((resolve) => {
-    let voices = speechSynthesis.getVoices();
-    if (voices.length > 0) return resolve(voices);
+  const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
+    return new Promise((resolve) => {
+      let voices = speechSynthesis.getVoices();
+      if (voices.length > 0) return resolve(voices);
 
-    const interval = setInterval(() => {
-      voices = speechSynthesis.getVoices();
-      if (voices.length > 0) {
+      const interval = setInterval(() => {
+        voices = speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          clearInterval(interval);
+          resolve(voices);
+        }
+      }, 100);
+
+      setTimeout(() => {
         clearInterval(interval);
-        resolve(voices);
-      }
-    }, 100);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      resolve([]); // fail-safe after 3s
-    }, 2000);
-  });
-};
-
-
-
-const speakResponse = async (reply: string) => {
-  try {
-    const voices = await waitForVoices();
-
-    const utterance = new SpeechSynthesisUtterance(reply);
-    utterance.volume = 1;
-    utterance.pitch = 1;
-    utterance.rate = 1;
-
-    const hindiVoice =
-      voices.find((v) => v.lang === "hi-IN" && v.name.includes("Google")) ||
-      voices.find((v) => v.lang === "hi-IN");
-
-    const englishVoice =
-      voices.find((v) => v.lang === "en-IN") ||
-      voices.find((v) => v.lang.startsWith("en"));
-
-    const selectedVoice = language === "hi" ? hindiVoice : englishVoice;
-
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-      utterance.lang = selectedVoice.lang;
-    } else {
-      console.warn("⚠️ No suitable voice found for", language);
-    }
-
-    // Optional: Log start/end
-    utterance.onstart = () => {
-      console.log("🟢 Speech started:", utterance.text);
-    };
-    utterance.onend = () => {
-      console.log("✅ Speech finished");
-    };
-    utterance.onerror = (e) => {
-      console.error("🔴 Speech error", e.error, utterance.text);
-    };
-
-    // ✅ Cancel any ongoing speech *first*
-    if (speechSynthesis.speaking || speechSynthesis.pending) {
-      console.log("⛔ Cancelling previous speech");
-      speechSynthesis.cancel();
-      await new Promise((res) => setTimeout(res, 200)); // ensure clean cancel
-    }
-
-    // 🔊 Speak latest message (always)
-    speechSynthesis.speak(utterance);
-    console.log("🎤 Speaking:", utterance.text);
-  } catch (err) {
-    console.error("❌ speakResponse error:", err);
-  }
-};
-
-
-
-  // group items by category name
-  const groupedItems = useMemo(() => {
-    const map: { [category: string]: any[] } = {};
-
-    items?.forEach((item: any) => {
-      const categoryName = item.category?.name || "Uncategorized";
-      if (!map[categoryName]) map[categoryName] = [];
-      map[categoryName].push(item);
+        resolve([]); // fail-safe after 3s
+      }, 2000);
     });
+  };
 
-    return map;
-  }, [items]);
+
+
+  const speakResponse = async (reply: string) => {
+    try {
+      const voices = await waitForVoices();
+
+      const utterance = new SpeechSynthesisUtterance(reply);
+      utterance.volume = 1;
+      utterance.pitch = 1;
+      utterance.rate = 1;
+
+      const hindiVoice =
+        voices.find((v) => v.lang === "hi-IN" && v.name.includes("Google")) ||
+        voices.find((v) => v.lang === "hi-IN");
+
+      const englishVoice =
+        voices.find((v) => v.lang === "en-IN") ||
+        voices.find((v) => v.lang.startsWith("en"));
+
+      const selectedVoice = language === "hi" ? hindiVoice : englishVoice;
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        console.warn("⚠️ No suitable voice found for", language);
+      }
+
+      // Optional: Log start/end
+      utterance.onstart = () => {
+        console.log("🟢 Speech started:", utterance.text);
+      };
+      utterance.onend = () => {
+        console.log("✅ Speech finished");
+      };
+      utterance.onerror = (e) => {
+        console.error("🔴 Speech error", e.error, utterance.text);
+      };
+
+      // ✅ Cancel any ongoing speech *first*
+      if (speechSynthesis.speaking || speechSynthesis.pending) {
+        console.log("⛔ Cancelling previous speech");
+        speechSynthesis.cancel();
+        await new Promise((res) => setTimeout(res, 200)); // ensure clean cancel
+      }
+
+      // 🔊 Speak latest message (always)
+      speechSynthesis.speak(utterance);
+      console.log("🎤 Speaking:", utterance.text);
+    } catch (err) {
+      console.error("❌ speakResponse error:", err);
+    }
+  };
+
 
   return (
     <div className="fixed bottom-0 m-6 w-[335px] bg-white shadow-xl rounded-lg p-4 h-[85%] w-[85%]">
@@ -339,7 +330,7 @@ const speakResponse = async (reply: string) => {
               </div>
             )}
 
-            {["menu_browsing", ""].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
+            {/* {["menu_browsing", ""].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
               msg.items.forEach((item) => {
                 const cat = item.category?.name || "Uncategorized";
@@ -363,8 +354,8 @@ const speakResponse = async (reply: string) => {
                   ))}
                 </div>
               );
-            })()}
-            {msg.intent === "order_item" && msg.items?.length > 0 && (
+            })()} */}
+            {msg.intent === "order_item" && msg.items?.length > 0 && msg?.items?.[0] !== undefined && (
               <AddToCartFlow items={msg.items} tableId={tableId ?? ""} />
             )}
           </div>
