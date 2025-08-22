@@ -109,14 +109,14 @@ export default function Cart() {
       ) : (
         <div className="space-y-4">
           {items.map((item: any) => {
-            const id = item.menuItem._id;
+            const id = item.menuItem?._id;
             const quantity = localCartMap[id] ?? item.quantity;
             const isLoading = loadingItemId === id;
 
             return (
               <div key={id} className="w-full gap-4 border rounded p-4 bg-white shadow-sm">
                 <div className="flex flex-row justify-between">
-                  <img src={item.menuItem.image} className="w-20 h-20 object-cover rounded" />
+                  <img src={item?.menuItem?.image} className="w-20 h-20 object-cover rounded" />
                   <div className="ml-4 flex flex-col items-end">
                     <span className="text-lg pb-[5px] font-semibold">{item.menuItem.itemName?.en}</span>
                     <p className="text-sm text-gray-600">₹{item.menuItem.price} × {quantity}</p>
