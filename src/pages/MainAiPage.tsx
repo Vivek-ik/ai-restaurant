@@ -271,7 +271,7 @@ const VoiceAssistantUI = () => {
               )}
             </div>
           )}
-          {["menu_browsing", "filter_by_jain"].includes(intent ?? '') && (
+          {/* {["menu_browsing", "filter_by_jain"].includes(intent ?? '') && (
             <div className="space-y-4">
               {Object.entries(groupedItems).map(([categoryName, items]) => (
                 <div key={categoryName}>
@@ -289,7 +289,7 @@ const VoiceAssistantUI = () => {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
 
         </div>
       )}

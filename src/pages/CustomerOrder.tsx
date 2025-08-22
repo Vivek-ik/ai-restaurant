@@ -172,7 +172,7 @@ export default function Order({ onClose, isOpen }: OrderProps) {
 
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
-  window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
 
     const updatedMessages = [
       ...messages,
@@ -230,13 +230,19 @@ export default function Order({ onClose, isOpen }: OrderProps) {
     });
   };
 
-
+  const removeEmojis = (text: string) => {
+    // Regex removes most emoji ranges (works for Hindi + English text as well)
+    return text.replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]|\uFE0F|\u200D)/g,
+      ""
+    );
+  };
 
   const speakResponse = async (reply: string) => {
     try {
       const voices = await waitForVoices();
 
-      const utterance = new SpeechSynthesisUtterance(reply);
+      const utterance = new SpeechSynthesisUtterance(removeEmojis(reply));
       utterance.volume = 1;
       utterance.pitch = 1;
       utterance.rate = 1;
@@ -258,32 +264,18 @@ export default function Order({ onClose, isOpen }: OrderProps) {
         console.warn("⚠️ No suitable voice found for", language);
       }
 
-      // Optional: Log start/end
-      utterance.onstart = () => {
-        console.log("🟢 Speech started:", utterance.text);
-      };
-      utterance.onend = () => {
-        console.log("✅ Speech finished");
-      };
-      utterance.onerror = (e) => {
-        console.error("🔴 Speech error", e.error, utterance.text);
-      };
-
-      // ✅ Cancel any ongoing speech *first*
       if (speechSynthesis.speaking || speechSynthesis.pending) {
         console.log("⛔ Cancelling previous speech");
         speechSynthesis.cancel();
-        await new Promise((res) => setTimeout(res, 200)); // ensure clean cancel
+        await new Promise((res) => setTimeout(res, 200));
       }
 
-      // 🔊 Speak latest message (always)
       speechSynthesis.speak(utterance);
       console.log("🎤 Speaking:", utterance.text);
     } catch (err) {
       console.error("❌ speakResponse error:", err);
     }
   };
-
 
   return (
     <div className="fixed bottom-0 m-6 w-[335px] bg-white shadow-xl rounded-lg p-4 h-[85%] w-[85%]">
