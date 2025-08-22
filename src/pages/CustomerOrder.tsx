@@ -147,14 +147,6 @@ export default function Order({ onClose, isOpen }: OrderProps) {
     };
   }, []);
 
-  const handleMicClick = () => {
-    window.speechSynthesis.cancel();
-
-    if (recognitionRef.current) {
-      recognitionRef.current.start();
-    }
-  };
-
   const sendAIMessage = async (message: string, lang: string, history: any, lastAIItems: any) => {
     const res = await api.post("/api/ai-order", {
       tableId: tableId ?? "",
@@ -180,6 +172,7 @@ export default function Order({ onClose, isOpen }: OrderProps) {
 
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
+  window.speechSynthesis.cancel();
 
     const updatedMessages = [
       ...messages,
@@ -330,6 +323,7 @@ export default function Order({ onClose, isOpen }: OrderProps) {
               </div>
             )}
 
+
             {/* {["menu_browsing", ""].includes(msg.intent ?? '') && msg.items.length > 0 && (() => {
               const map: { [category: string]: any[] } = {};
               msg.items.forEach((item) => {
@@ -359,7 +353,16 @@ export default function Order({ onClose, isOpen }: OrderProps) {
               <AddToCartFlow items={msg.items} tableId={tableId ?? ""} />
             )}
           </div>
+
         ))}
+
+        {loading && (
+          <div className="flex gap-1 text-gray-500 mt-2">
+            <span className="animate-bounce">●</span>
+            <span className="animate-bounce delay-150">●</span>
+            <span className="animate-bounce delay-300">●</span>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2 items-center">
